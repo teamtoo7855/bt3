@@ -25,8 +25,7 @@ flowchart LR
   SYS -->|Report confirmations| R
 
   SYS -->|Alert payloads| N
-  N -->|Notifications|
-
+  N -->|Notifications| U
 ```
 
 ## 2 Component Diagram
@@ -83,7 +82,7 @@ flowchart TB
 
 ```
 
-## Sequence Diagram
+## 3 Sequence Diagram
 
 ```mermaid
 sequenceDiagram
