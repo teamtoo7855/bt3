@@ -28,7 +28,6 @@ flowchart LR
   N -->|Notifications|
 
 ```
-![alt text](image.png)
 
 ## 2 Component Diagram
 
@@ -83,7 +82,6 @@ flowchart TB
   AlertService --> DB
 
 ```
-![alt text](image-1.png)
 
 ## Sequence Diagram
 
@@ -122,6 +120,5 @@ sequenceDiagram
     API->>N: Send notification
     N-->>U: Notification delivered
   end
-
 ```
-![alt text](image-2.png)
+
