@@ -1,7 +1,7 @@
 # bt3
-Bus Type Transit Tracker
+Bus Type Transit Tracker (bt3)
 ## Project Overview
-The Bus Analysis & Live Location System (BALLS) allows users to view bus routes and track live bus locations using real-time transit data.
+bt3 is an app that allows users to view bus routes and track live bus locations using real-time transit data.
 ## Architecture Summary
 The system follows a Client–Server architecture with layered components. The frontend communicates with a backend API that processes live bus data from external transit services. Caching and persistent storage are used to improve performance and reliability. Detailed architectural diagrams and justifications can be found in `docs/architecture.md`.
 ## Requirements
