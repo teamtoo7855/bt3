@@ -75,6 +75,7 @@ def vehicles_geojson():
             },
             "properties": {
                 "vehicle_id": v.vehicle.id,
+                "vehicle_name": check_id(int(v.vehicle.id)),
                 "trip_id": v.trip.trip_id if v.trip.HasField("trip_id") else None,
                 "bearing": v.position.bearing if v.position.HasField("bearing") else 0
             }
