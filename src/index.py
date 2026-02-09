@@ -10,6 +10,15 @@ app = Flask(__name__)
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
 
 
+# get bus type data if not already existing
+try:
+    with open('types.pkl', 'rb') as f:
+        processed = pickle.load(f)
+        print("types.pkl loaded")
+except:
+    print("types.pkl not found, fetching")
+    fetch_types()
+
 @app.route("/")
 #get html page defined as index.html, also include mapbox token
 def home():
