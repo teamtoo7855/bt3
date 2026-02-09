@@ -70,7 +70,7 @@ map.on("load", () => {
 
           // Copy the coordinates from the POI underneath the cursor
           const coordinates = e.feature.geometry.coordinates.slice();
-          const description = e.feature.properties.vehicle_id;
+          const description = e.feature.properties.vehicle_name;
 
           // Populate the popup and set its coordinates based on the feature found.
           popup.setLngLat(coordinates).setHTML(description).addTo(map);
