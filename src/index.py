@@ -9,6 +9,23 @@ app = Flask(__name__)
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
 
+def check_id(bus_id : int):
+    with open('types.pkl', 'rb') as f:
+        bus_name = None
+        processed = pickle.load(f)
+        for t in processed:
+            for r in t['fn_range']:
+                if len(r) % 2:
+                    if bus_id == r[0]:
+                        bus_name = f'{t['year']} {t['manufacturer']} {t['model']}'
+                        break
+                    else:
+                        continue
+                    break
+                if bus_id in range(r[0], r[1]):
+                    bus_name = f'{t['year']} {t['manufacturer']} {t['model']}'
+                    break
+        return bus_name
 
 # get bus type data if not already existing
 try:
