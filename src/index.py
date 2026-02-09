@@ -5,7 +5,7 @@ import keys
 app = Flask(__name__)
 
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
-GTFS_VEHICLE_URL = keys.position
+GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
 
 
 @app.route("/")
