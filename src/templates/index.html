@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <title>Live Bus Map + 3D Buildings</title>
 
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" rel="stylesheet" />
 
   <style>
     body { margin: 0; }
@@ -56,10 +56,41 @@ map.on("load", () => {
     }
   });
 
+  const popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false
+  });
+
+  // show popup on mouse hover
+  map.addInteraction('places-mouseenter-interaction', {
+      type: 'mouseenter',
+      target: { layerId: 'bus-points' },
+      handler: (e) => {
+          map.getCanvas().style.cursor = 'pointer';
+
+          // Copy the coordinates from the POI underneath the cursor
+          const coordinates = e.feature.geometry.coordinates.slice();
+          const description = e.feature.properties.vehicle_name;
+
+          // Populate the popup and set its coordinates based on the feature found.
+          popup.setLngLat(coordinates).setHTML(description).addTo(map);
+      }
+  });
+
+  // clear popup when mouse no longer hovering
+  map.addInteraction('places-mouseleave-interaction', {
+      type: 'mouseleave',
+      target: { layerId: 'bus-points' },
+      handler: () => {
+          map.getCanvas().style.cursor = '';
+          popup.remove();
+      }
+  });
+
   // Auto-refresh buses every .1 seconds
   setInterval(() => {
     map.getSource("buses").setData("/vehicles.geojson");
-  }, 100);
+  }, 1000);
 
   // -----------------------------
   // Enable 3D Buildings
