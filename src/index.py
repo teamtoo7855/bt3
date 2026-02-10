@@ -12,7 +12,6 @@ app = Flask(__name__)
 
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
-
 GTFS_TRIP_URL = f"https://gtfsapi.translink.ca/v3/gtfsrealtime?apikey={keys.translink_api_key}"
 
 def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
