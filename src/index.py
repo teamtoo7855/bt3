@@ -4,10 +4,21 @@ from google.transit import gtfs_realtime_pb2
 import keys
 import pickle
 from tools.fetch_types import fetch_types
+import csv
 app = Flask(__name__)
 
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
+
+def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
+    m = {}
+    with open(stops_path, "r", encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            sid = (row.get("stop_id") or "").strip()
+            code = (row.get("stop_code") or "").strip()
+            if sid and code:
+                m[code] = sid
+    return m
 
 def check_id(bus_id : int):
     with open('types.pkl', 'rb') as f:
