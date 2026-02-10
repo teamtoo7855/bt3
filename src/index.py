@@ -55,8 +55,8 @@ def load_short_to_routeid(routes_path: str) -> dict[str, str]:
                 m[short] = rid
     return m
 
-STOPCODE_TO_STOPID = load_stopcode_to_stopid("stops.txt")
-SHORT_TO_ROUTEID = load_short_to_routeid("routes.txt")
+STOPCODE_TO_STOPID = load_stopcode_to_stopid("./data/stops.txt")
+SHORT_TO_ROUTEID = load_short_to_routeid("./data/routes.txt")
 
 def check_id(bus_id : int):
     with open('types.pkl', 'rb') as f:
