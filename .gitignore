@@ -215,5 +215,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.tom
 
+data/
 keys.py
 types.pkl
