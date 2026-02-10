@@ -23,6 +23,18 @@ except:
     print("types.pkl not found, fetching")
     fetch_types()
 
+# get GTFS static data if not already existing
+data_dir = './data'
+try:
+    file_count = len(os.listdir(data_dir))
+    if file_count != 16:
+        raise Exception
+    else:
+        print("GTFS static data found")
+except:
+    print("GTFS static data not found, fetching")
+    fetch_gtfs_static()
+
 def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
     m = {}
     with open(stops_path, "r", encoding="utf-8-sig", newline="") as f:
