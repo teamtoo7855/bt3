@@ -1,6 +1,6 @@
-# Architecture - Bus Analysis and Live Location System BALLS
+# Architecture
 
-This document defines the system boundary, major components, architectural pattern, and key flows for BALLS.
+This document defines the system boundary, major components, architectural pattern, and key flows.
 
 ---
 
@@ -13,7 +13,7 @@ flowchart LR
   R[User Reports]
   N[Notification Provider]
 
-  SYS[Bus Analysis and Live Location System BALLS]
+  SYS[bt3]
 
   U -->|Route selections and preferences| SYS
   SYS -->|ETA bus info and alerts| U
@@ -124,7 +124,7 @@ sequenceDiagram
 ## 4 Architectural Pattern Justification
 Architectural Pattern: Client–Server with Layered Architecture
 
-The Bus Analysis & Live Location System (BALLS) follows a Client–Server architecture combined with a layered design. This pattern cleanly separates concerns between the user interface, application logic, and data access, making the system easier to develop, maintain, and scale.
+bt3 follows a Client–Server architecture combined with a layered design. This pattern cleanly separates concerns between the user interface, application logic, and data access, making the system easier to develop, maintain, and scale.
 
 The client layer (web or mobile frontend) is responsible solely for presenting information to users, such as bus routes and live location updates. It communicates with the server layer via well-defined API endpoints, ensuring the frontend remains decoupled from backend implementation details. The backend layer contains the core business logic, including processing live transit data, caching frequently updated locations, and coordinating data from external APIs. A data layer persists route information and metadata while improving performance and reliability.
 
