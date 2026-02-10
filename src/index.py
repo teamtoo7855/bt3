@@ -1,11 +1,13 @@
 from flask import Flask, jsonify, render_template, request
+from google.transit import gtfs_realtime_pb2
 import time
 import requests
-from google.transit import gtfs_realtime_pb2
-import keys
 import pickle
-from tools.fetch_types import fetch_types
 import csv
+import os
+import keys
+from tools.fetch_types import fetch_types
+from tools.fetch_gtfs_static import fetch_gtfs_static
 app = Flask(__name__)
 
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
