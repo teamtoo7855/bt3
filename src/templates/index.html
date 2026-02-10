@@ -205,6 +205,44 @@ locBtn.onclick = () => {
     maximumAge: 30000
   });
 };
+
+const stopInput = document.getElementById("stopInput");
+const busInput = document.getElementById("busInput");
+const etaBtn = document.getElementById("etaBtn");
+const etaStatus = document.getElementById("etaStatus");
+
+etaBtn.onclick = async () => {
+  const stopId = stopInput.value.trim();
+  const busNum = busInput.value.trim();
+
+  if (!stopId || !busNum) {
+    etaStatus.textContent = "Enter stop and bus";
+    return;
+  }
+
+  etaStatus.textContent = "Loading...";
+
+  try {
+    const url = `/api/next_arrival?stop_id=${encodeURIComponent(stopId)}&bus_number=${encodeURIComponent(busNum)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.error) {
+      etaStatus.textContent = data.error;
+      return;
+    }
+
+    if (!data.next_arrival) {
+      etaStatus.textContent = "No arrival found";
+      return;
+    }
+
+    etaStatus.textContent = `${data.next_arrival.eta_minutes} min`;
+  } catch (e) {
+    etaStatus.textContent = "Request failed";
+    console.log(e);
+  }
+};
 </script>
 
 </body>
