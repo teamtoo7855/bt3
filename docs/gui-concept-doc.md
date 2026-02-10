@@ -18,7 +18,7 @@ This ensures the UI remains approachable for first-time users while still suppor
 
 ## Main Interface Layout
 
-![Main map interface with live bus markers](docs/basic-gui.md)
+![Main map interface with live bus markers](docs/basic-gui.png)
 
 - The map occupies the majority of the screen and loads immediately on startup.
 - Live bus locations are displayed as high-contrast markers, making them visible at both high and low zoom levels.
