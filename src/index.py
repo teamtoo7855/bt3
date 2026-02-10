@@ -20,6 +20,19 @@ def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
                 m[code] = sid
     return m
 
+def load_short_to_routeid(routes_path: str) -> dict[str, str]:
+    m = {}
+    with open(routes_path, "r", encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            rid = (row.get("route_id") or "").strip()
+            short = (row.get("route_short_name") or "").strip()
+            if rid and short and short not in m:
+                m[short] = rid
+    return m
+
+STOPCODE_TO_STOPID = load_stopcode_to_stopid("stops.txt")
+SHORT_TO_ROUTEID = load_short_to_routeid("routes.txt")
+
 def check_id(bus_id : int):
     with open('types.pkl', 'rb') as f:
         bus_name = None
