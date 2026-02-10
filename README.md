@@ -1,5 +1,6 @@
 # bt3
 Bus Type Transit Tracker (bt3)
+![Screenshot of bt3](https://github.com/teamtoo7855/bt3/blob/main/docs/screenshot.png?raw=true)
 ## Project Overview
 bt3 is an app that allows users to view bus routes and track live bus locations using real-time transit data.
 ## Architecture Summary
