@@ -14,6 +14,20 @@
 </head>
 <body>
 
+<div style="position:absolute;z-index:2;top:12px;left:12px;background:white;padding:8px 10px;border-radius:8px;font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
+  <button id="locBtn">Use my location</button>
+  <span id="locStatus" style="margin-left:8px;font-size:12px;"></span>
+</div>
+
+<div style="position:absolute;z-index:2;top:60px;left:12px;background:white;padding:8px 10px;border-radius:8px;font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
+  <label>Stop</label>
+  <input id="stopInput" type="text" style="width:90px;margin-left:6px;">
+  <label style="margin-left:8px;">Bus</label>
+  <input id="busInput" type="text" style="width:70px;margin-left:6px;">
+  <button id="etaBtn" style="margin-left:8px;">Get ETA</button>
+  <span id="etaStatus" style="margin-left:8px;font-size:12px;"></span>
+</div>
+
 <div id="map"></div>
 
 <script>
@@ -56,25 +70,40 @@ map.on("load", () => {
     }
   });
 
-  const popup = new mapboxgl.Popup({
-      closeButton: false,
-      closeOnClick: false
+  map.addSource("user", {
+    type: "geojson",
+    data: {
+      "type": "FeatureCollection",
+      "features": []
+    }
   });
 
-  // show popup on mouse hover
+  map.addLayer({
+    id: "user-point",
+    type: "circle",
+    source: "user",
+    paint: {
+      "circle-radius": 8,
+      "circle-color": "#ff0000",
+      "circle-stroke-width": 3,
+      "circle-stroke-color": "#ffffff"
+    }
+  });
+
+  const popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+  });
+
   map.addInteraction('places-mouseenter-interaction', {
-      type: 'mouseenter',
-      target: { layerId: 'bus-points' },
-      handler: (e) => {
-          map.getCanvas().style.cursor = 'pointer';
-
-          // Copy the coordinates from the POI underneath the cursor
-          const coordinates = e.feature.geometry.coordinates.slice();
-          const description = e.feature.properties.vehicle_name;
-
-          // Populate the popup and set its coordinates based on the feature found.
-          popup.setLngLat(coordinates).setHTML(description).addTo(map);
-      }
+    type: 'mouseenter',
+    target: { layerId: 'bus-points' },
+    handler: (e) => {
+      map.getCanvas().style.cursor = 'pointer';
+      const coordinates = e.feature.geometry.coordinates.slice();
+      const description = e.feature.properties.vehicle_name;
+      popup.setLngLat(coordinates).setHTML(description).addTo(map);
+    }
   });
 
   // clear popup when mouse no longer hovering
@@ -125,6 +154,95 @@ map.on("load", () => {
   );
 
 });
+
+const locBtn = document.getElementById("locBtn");
+const locStatus = document.getElementById("locStatus");
+
+async function sendUserLocation(lat, lon) {
+  const res = await fetch("/api/location/user", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ lat, lon })
+  });
+  return res.json();
+}
+
+locBtn.onclick = () => {
+  if (!navigator.geolocation) {
+    locStatus.textContent = "Geolocation not supported";
+    return;
+  }
+
+  locStatus.textContent = "Requesting permission...";
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    map.getSource("user").setData({
+      "type": "FeatureCollection",
+      "features": [{
+        "type": "Feature",
+        "geometry": { "type": "Point", "coordinates": [lon, lat] },
+        "properties": {}
+      }]
+    });
+
+    map.flyTo({ center: [lon, lat], zoom: 14 });
+
+    try {
+      const data = await sendUserLocation(lat, lon);
+      locStatus.textContent = (data && data.ok) ? "Location saved" : "Server error";
+    } catch (e) {
+      locStatus.textContent = "Send failed";
+      console.log(e);
+    }
+  }, (err) => {
+    locStatus.textContent = "Denied/error: " + err.message;
+  }, {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 30000
+  });
+};
+
+const stopInput = document.getElementById("stopInput");
+const busInput = document.getElementById("busInput");
+const etaBtn = document.getElementById("etaBtn");
+const etaStatus = document.getElementById("etaStatus");
+
+etaBtn.onclick = async () => {
+  const stopId = stopInput.value.trim();
+  const busNum = busInput.value.trim();
+
+  if (!stopId || !busNum) {
+    etaStatus.textContent = "Enter stop and bus";
+    return;
+  }
+
+  etaStatus.textContent = "Loading...";
+
+  try {
+    const url = `/api/next_arrival?stop_id=${encodeURIComponent(stopId)}&bus_number=${encodeURIComponent(busNum)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.error) {
+      etaStatus.textContent = data.error;
+      return;
+    }
+
+    if (!data.next_arrival) {
+      etaStatus.textContent = "No arrival found";
+      return;
+    }
+
+    etaStatus.textContent = `${data.next_arrival.eta_minutes} min`;
+  } catch (e) {
+    etaStatus.textContent = "Request failed";
+    console.log(e);
+  }
+};
 </script>
 
 </body>
