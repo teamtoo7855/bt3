@@ -14,6 +14,15 @@ app = Flask(__name__)
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
 GTFS_TRIP_URL = f"https://gtfsapi.translink.ca/v3/gtfsrealtime?apikey={keys.translink_api_key}"
 
+# get bus type data if not already existing
+try:
+    with open('types.pkl', 'rb') as f:
+        processed = pickle.load(f)
+        print("types.pkl loaded")
+except:
+    print("types.pkl not found, fetching")
+    fetch_types()
+
 def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
     m = {}
     with open(stops_path, "r", encoding="utf-8-sig", newline="") as f:
@@ -54,15 +63,6 @@ def check_id(bus_id : int):
                     bus_name = f'{t['year']} {t['manufacturer']} {t['model']}'
                     break
         return bus_name
-
-# get bus type data if not already existing
-try:
-    with open('types.pkl', 'rb') as f:
-        processed = pickle.load(f)
-        print("types.pkl loaded")
-except:
-    print("types.pkl not found, fetching")
-    fetch_types()
 
 @app.route("/")
 #get html page defined as index.html, also include mapbox token
