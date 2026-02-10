@@ -211,6 +211,18 @@ const busInput = document.getElementById("busInput");
 const etaBtn = document.getElementById("etaBtn");
 const etaStatus = document.getElementById("etaStatus");
 
+// restore saved values on page load
+stopInput.value = localStorage.getItem("stopInput") || "";
+busInput.value = localStorage.getItem("busInput") || "";
+
+// save whenever user types
+stopInput.addEventListener("input", () => {
+  localStorage.setItem("stopInput", stopInput.value);
+});
+busInput.addEventListener("input", () => {
+  localStorage.setItem("busInput", busInput.value);
+});
+
 etaBtn.onclick = async () => {
   const stopId = stopInput.value.trim();
   const busNum = busInput.value.trim();
