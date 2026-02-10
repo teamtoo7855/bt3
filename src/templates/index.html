@@ -61,25 +61,40 @@ map.on("load", () => {
     }
   });
 
-  const popup = new mapboxgl.Popup({
-      closeButton: false,
-      closeOnClick: false
+  map.addSource("user", {
+    type: "geojson",
+    data: {
+      "type": "FeatureCollection",
+      "features": []
+    }
   });
 
-  // show popup on mouse hover
+  map.addLayer({
+    id: "user-point",
+    type: "circle",
+    source: "user",
+    paint: {
+      "circle-radius": 8,
+      "circle-color": "#ff0000",
+      "circle-stroke-width": 3,
+      "circle-stroke-color": "#ffffff"
+    }
+  });
+
+  const popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+  });
+
   map.addInteraction('places-mouseenter-interaction', {
-      type: 'mouseenter',
-      target: { layerId: 'bus-points' },
-      handler: (e) => {
-          map.getCanvas().style.cursor = 'pointer';
-
-          // Copy the coordinates from the POI underneath the cursor
-          const coordinates = e.feature.geometry.coordinates.slice();
-          const description = e.feature.properties.vehicle_name;
-
-          // Populate the popup and set its coordinates based on the feature found.
-          popup.setLngLat(coordinates).setHTML(description).addTo(map);
-      }
+    type: 'mouseenter',
+    target: { layerId: 'bus-points' },
+    handler: (e) => {
+      map.getCanvas().style.cursor = 'pointer';
+      const coordinates = e.feature.geometry.coordinates.slice();
+      const description = e.feature.properties.vehicle_name;
+      popup.setLngLat(coordinates).setHTML(description).addTo(map);
+    }
   });
 
   // clear popup when mouse no longer hovering
@@ -130,6 +145,57 @@ map.on("load", () => {
   );
 
 });
+
+const locBtn = document.getElementById("locBtn");
+const locStatus = document.getElementById("locStatus");
+
+async function sendUserLocation(lat, lon) {
+  const res = await fetch("/api/location/user", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ lat, lon })
+  });
+  return res.json();
+}
+
+locBtn.onclick = () => {
+  if (!navigator.geolocation) {
+    locStatus.textContent = "Geolocation not supported";
+    return;
+  }
+
+  locStatus.textContent = "Requesting permission...";
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    map.getSource("user").setData({
+      "type": "FeatureCollection",
+      "features": [{
+        "type": "Feature",
+        "geometry": { "type": "Point", "coordinates": [lon, lat] },
+        "properties": {}
+      }]
+    });
+
+    map.flyTo({ center: [lon, lat], zoom: 14 });
+
+    try {
+      const data = await sendUserLocation(lat, lon);
+      locStatus.textContent = (data && data.ok) ? "Location saved" : "Server error";
+    } catch (e) {
+      locStatus.textContent = "Send failed";
+      console.log(e);
+    }
+  }, (err) => {
+    locStatus.textContent = "Denied/error: " + err.message;
+  }, {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 30000
+  });
+};
 </script>
 
 </body>
