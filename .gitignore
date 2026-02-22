@@ -221,3 +221,4 @@ __marimo__/
 data/
 keys.py
 types.pkl
+serviceAccountKey.json
