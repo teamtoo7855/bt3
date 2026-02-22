@@ -210,6 +210,55 @@ def vehicles_geojson():
         "type": "FeatureCollection",
         "features": features
     })
+'''
+@app.route('api/profile', methods=['GET', 'POST'])
+def profile(user):
+    doc_ref = db.collection('profile').document(user)
+    if request.method == 'GET':
+        doc = doc_ref.get()
+        if not doc.exists:
+            return jsonify({"error": "Profile not found"}), 404
+    if not request.is_json:
+        return jsonify({"error": "Invalid request, Content-Type must be application/json"}), 415
+    data = request.get_json()
+'''
+@app.route('/profile/create', method=['POST'])
+def profile_create():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    email = request.form.get('email')
+    favorite_bus_type = request.form.get('favorite_bus_type')
+    favorite_bus_route = request.form.get('favorite_bus_route')
+    favorite_bus_stop_id = request.form.get('favorite_bus_stop_id')
+    theme = request.form.get('theme')
+    alerts = request.form.get('alerts')
+    created = request.form.get('created')
+    data = normalize_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
+    db.collection('profile').document(username).set(data)
+
+def validate_profile_data(username, password, email, favorite_bus_type,
+                          favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
+    if not username or not password:
+        return "please enter your username and password"
+    if not type(username) is str and type(password) is str:
+        return "username must be a string."
+    return None
+
+def normalize_profile_data(username, password, email, favorite_bus_type,
+                           favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
+    return {
+        "username": username.strip(),
+        "password": password.strip(),
+        "email": email.strip(),
+        "preferences": {
+            "favorite_bus_type": favorite_bus_type.strip(),
+            "favorite_bus_route": favorite_bus_route.strip(),
+            "favorite_bus_stop_id": favorite_bus_stop_id.strip(),
+            "theme": theme.strip(),
+            "alerts": alerts.strip(),
+        },
+        "created": created.strip()
+    }
 
 
 if __name__ == "__main__":
