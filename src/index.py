@@ -8,7 +8,16 @@ import os
 import keys
 from tools.fetch_types import fetch_types
 from tools.fetch_gtfs_static import fetch_gtfs_static
+
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
 app = Flask(__name__)
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
