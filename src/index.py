@@ -225,6 +225,7 @@ def profile(user):
 #profile  creation
 @app.route('/profile/create', method=['POST'])
 def profile_create():
+    #define enterable fields of info
     username = request.form.get('username')
     password = request.form.get('password')
     email = request.form.get('email')
@@ -234,21 +235,26 @@ def profile_create():
     theme = request.form.get('theme')
     alerts = request.form.get('alerts')
     created = request.form.get('created')
+    #validate information
     error = validate_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
     if error:
         return jsonify({"error": "missing required fields in profile creation"}), 400
-
+    #format to JSON
     data = normalize_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
-    db.collection('profile').document(username).set(data)
+    #create new profile
+    doc_ref = db.collection('profile').document(username)
+    doc_ref.set(data)
     return jsonify({"status": "success", "message": "profile has been created"}), 201
 
 @app.route('/profile/<username>', methods=['GET'])
 def profile(username):
+    #define a reference document
     doc_ref = db.collection('profile').document(username)
     doc = doc_ref.get()
+    #check if account exists
     if not doc.exists:
         return jsonify({"error": "Profile not found"}), 404
-    return jsonify({"profile": doc.to_dict()})
+    return jsonify({"profile": doc.to_dict()}), 200
 
 #profile validation helper
 def validate_profile_data(username, password, email, favorite_bus_type,
