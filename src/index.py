@@ -222,6 +222,7 @@ def profile(user):
         return jsonify({"error": "Invalid request, Content-Type must be application/json"}), 415
     data = request.get_json()
 '''
+#profile  creation
 @app.route('/profile/create', method=['POST'])
 def profile_create():
     username = request.form.get('username')
@@ -233,9 +234,15 @@ def profile_create():
     theme = request.form.get('theme')
     alerts = request.form.get('alerts')
     created = request.form.get('created')
+    error = validate_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
+    if error:
+        return jsonify({"error": "missing required fields in profile creation"}), 400
+
     data = normalize_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
     db.collection('profile').document(username).set(data)
+    return jsonify({"status": "success", "message": "profile has been created"}), 201
 
+#profile validation helper
 def validate_profile_data(username, password, email, favorite_bus_type,
                           favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
     if not username or not password:
@@ -244,20 +251,23 @@ def validate_profile_data(username, password, email, favorite_bus_type,
         return "username must be a string."
     return None
 
+#profile data normalization
 def normalize_profile_data(username, password, email, favorite_bus_type,
                            favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
     return {
-        "username": username.strip(),
-        "password": password.strip(),
+        #required fields
+        "username": username.strip(), #username
+        "password": password.strip(), #password
+        #non-required fields
         "email": email.strip(),
         "preferences": {
-            "favorite_bus_type": favorite_bus_type.strip(),
-            "favorite_bus_route": favorite_bus_route.strip(),
-            "favorite_bus_stop_id": favorite_bus_stop_id.strip(),
-            "theme": theme.strip(),
-            "alerts": alerts.strip(),
+            "favorite_bus_type": favorite_bus_type.strip(), #enter in a specified format
+            "favorite_bus_route": favorite_bus_route.strip(), #would be an id of sorts, can visually make it easy to understand
+            "favorite_bus_stop_id": favorite_bus_stop_id.strip(), #would be a number
+            "theme": theme.strip(), #theme strings tbd
+            "alerts": alerts.strip(), #a true/false that would allow alert notifs
         },
-        "created": created.strip()
+        "created": created.strip() #date created if wanted to use
     }
 
 
