@@ -223,7 +223,7 @@ def profile(user):
     data = request.get_json()
 '''
 #profile  creation
-@app.route('/profile/create', method=['POST'])
+@app.route('/profile/create', methods=['POST'])
 def profile_create():
     #define enterable fields of info
     username = request.form.get('username')
@@ -243,7 +243,9 @@ def profile_create():
     data = normalize_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
     #create new profile
     doc_ref = db.collection('profile').document(username)
-    doc_ref.set(data)
+    if doc_ref.get().exists:
+        return jsonify({"error": "Profile already exists"}), 400
+    doc_ref.create(data)
     return jsonify({"status": "success", "message": "profile has been created"}), 201
 
 @app.route('/profile/<username>', methods=['GET'])
