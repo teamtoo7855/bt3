@@ -242,6 +242,14 @@ def profile_create():
     db.collection('profile').document(username).set(data)
     return jsonify({"status": "success", "message": "profile has been created"}), 201
 
+@app.route('/profile/<username>', methods=['GET'])
+def profile(username):
+    doc_ref = db.collection('profile').document(username)
+    doc = doc_ref.get()
+    if not doc.exists:
+        return jsonify({"error": "Profile not found"}), 404
+    return jsonify({"profile": doc.to_dict()})
+
 #profile validation helper
 def validate_profile_data(username, password, email, favorite_bus_type,
                           favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
