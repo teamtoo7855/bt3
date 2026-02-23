@@ -160,29 +160,14 @@ def next_arrival():
 @app.get("/api/shape")
 def get_shape():
     stop_id = request.args.get("stop_id", "").strip()
-    trip_id = None;
-    direction = None;
+    trip_id = request.args.get("trip_id", "").strip()
+    direction = request.args.get("direction", "").strip()
     if stop_id:
         with open("./data/stop_times.txt", "r", encoding="utf-8-sig", newline="") as f:
             for row in csv.DictReader(f):
                 if str((row.get("stop_id")).strip()) == str(stop_id):
                     trip_id = (row.get("trip_id")).strip()
                     break
-    else:
-        trip_id = request.args.get("trip_id", "").strip()
-        direction = request.args.get("direction", "").strip()
-    features = [
-        {
-            "type": "Feature",
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                ],
-            },
-            "properties": {},
-        }
-    ]
-    temp_list = [];
 
     with open("./data/trips.txt", "r", encoding="utf-8-sig", newline="") as f:
         shape_id = None;
@@ -190,19 +175,30 @@ def get_shape():
             if str((row.get("trip_id")).strip()) == str(trip_id):
                 shape_id = (row.get("shape_id")).strip()
                 with open("./data/shapes.txt", "r", encoding="utf-8-sig", newline="") as g:
+                    shape_pts = []
                     for row in csv.DictReader(g):
                         if (row.get("shape_id") or "").strip() == shape_id:
-                            temp_list.append(
-                                [int((row.get("shape_pt_sequence") or "").strip()), [float((row.get("shape_pt_lon") or "").strip()),float((row.get("shape_pt_lat") or "").strip())]]
-                            )
-                    temp_list.sort()
-                    for i in temp_list:
-                        features[0]["geometry"]["coordinates"].append(i[1])
+                            seq = int((row.get("shape_pt_sequence") or "").strip())
+                            lon = float((row.get("shape_pt_lon") or "").strip())
+                            lat = float((row.get("shape_pt_lat") or "").strip())
+                            shape_pts.append([seq, lon, lat])
+                    shape_pts.sort()
+                    for i in shape_pts:
+                        i.pop(0)
                     # send features to json
-                    return jsonify({
-                        "type": "FeatureCollection",
-                        "features": features
-                    })
+                    return jsonify(
+                        {
+                            "type": "FeatureCollection",
+                            "features": [{
+                                "type": "Feature",
+                                "geometry": {
+                                    "type": "LineString",
+                                    "coordinates": shape_pts,
+                                },
+                                "properties": {},
+                            }],
+                        }
+                    )
 
 @app.route("/vehicles.geojson")
 def vehicles_geojson():
