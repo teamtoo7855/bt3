@@ -188,20 +188,11 @@ map.on("load", () => {
 
   const card = document.getElementById('properties');
   const showCard = (feature) => {
-      const state = Object.entries(map.getFeatureState(feature))
-          .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
-          .join('');
-
-      const properties = Object.entries(feature.properties)
-          .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
-          .join('');
-
       card.innerHTML = `
               <div class="map-overlay-inner">
-                  <!-- <b>featureset</b>: <code>${feature.target.featuresetId}</code><br> -->
-                  <b>feature state</b>: <code>${state}</code>
-                  <hr><b>Properties</b>
-                  ${properties}
+                  <b>${feature.properties.stop_name}</b>
+                  <hr><b>About This Stop</b>
+                  <br><b>Stop Number</b>: ${feature.properties.stop_code}</p>
               </div>`;
 
       card.style.display = 'block';
