@@ -176,7 +176,9 @@ map.on("load", () => {
       target: { layerId: 'bus-points' },
       handler: () => {
           map.getCanvas().style.cursor = '';
-          popup.remove();
+          // popup.remove();
+          map.removeLayer('hover-layer')
+          map.removeSource('hover-route')
       }
   });
 
