@@ -267,6 +267,7 @@ def stops_geojson():
                     ]
                 },
                 "properties": {
+                    "stop_id": (row.get("stop_id") or "").strip(),
                     "stop_code": (row.get("stop_code") or "").strip(),
                     "stop_name": (row.get("stop_name") or "").strip(),
                 }
