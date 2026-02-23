@@ -96,6 +96,23 @@ map.on("load", () => {
     }
   });
 
+  map.addSource("stops", {
+    type: "geojson",
+    data: "/stops.geojson"
+  });
+
+  map.addLayer({
+    id: "stop-points",
+    type: "circle",
+    source: "stops",
+    paint: {
+      "circle-radius": 7,
+      "circle-color": "#ec5277",
+      "circle-stroke-width": 3,
+      "circle-stroke-color": "#ffffff"
+    }
+  });
+
   map.addSource("user", {
     type: "geojson",
     data: {
