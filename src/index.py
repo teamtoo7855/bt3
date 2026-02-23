@@ -202,6 +202,33 @@ def vehicles_geojson():
         "features": features
     })
 
+@app.route("/stops.geojson")
+def stops_geojson():
+    m = {}
+    with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
+        features = []
+        for row in csv.DictReader(f):
+            features.append({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        (row.get("stop_lon") or "").strip(),
+                        (row.get("stop_lat") or "").strip(),
+                    ]
+                },
+                "properties": {
+                    "stop_code": (row.get("stop_code") or "").strip(),
+                    "stop_name": (row.get("stop_name") or "").strip(),
+                }
+            })
+        #send features to json
+        return jsonify({
+            "type": "FeatureCollection",
+            "features": features
+        })
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
