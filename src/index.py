@@ -253,7 +253,6 @@ def vehicles_geojson():
 
 @app.route("/stops.geojson")
 def stops_geojson():
-    m = {}
     with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
         features = []
         for row in csv.DictReader(f):
