@@ -8,7 +8,16 @@ import os
 import keys
 from tools.fetch_types import fetch_types
 from tools.fetch_gtfs_static import fetch_gtfs_static
+
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
 app = Flask(__name__)
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
@@ -246,6 +255,82 @@ def vehicles_geojson():
         "type": "FeatureCollection",
         "features": features
     })
+'''
+@app.route('api/profile', methods=['GET', 'POST'])
+def profile(user):
+    doc_ref = db.collection('profile').document(user)
+    if request.method == 'GET':
+        doc = doc_ref.get()
+        if not doc.exists:
+            return jsonify({"error": "Profile not found"}), 404
+    if not request.is_json:
+        return jsonify({"error": "Invalid request, Content-Type must be application/json"}), 415
+    data = request.get_json()
+'''
+#profile  creation
+@app.route('/profile/create', methods=['POST'])
+def profile_create():
+    #define enterable fields of info
+    username = request.form.get('username')
+    password = request.form.get('password')
+    email = request.form.get('email')
+    favorite_bus_type = request.form.get('favorite_bus_type')
+    favorite_bus_route = request.form.get('favorite_bus_route')
+    favorite_bus_stop_id = request.form.get('favorite_bus_stop_id')
+    theme = request.form.get('theme')
+    alerts = request.form.get('alerts')
+    created = request.form.get('created')
+    #validate information
+    error = validate_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
+    #error clause
+    if error:
+        return jsonify({"error": "missing required fields in profile creation"}), 400
+    #format to JSON
+    data = normalize_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
+    #create new profile
+    doc_ref = db.collection('profile').document(username)
+    if doc_ref.get().exists:
+        return jsonify({"error": "Profile already exists"}), 400
+    doc_ref.create(data)
+    return jsonify({"status": "success", "message": "profile has been created"}), 201
+
+@app.route('/profile/<username>', methods=['GET'])
+def profile(username):
+    #define a reference document
+    doc_ref = db.collection('profile').document(username)
+    doc = doc_ref.get()
+    #check if account exists
+    if not doc.exists:
+        return jsonify({"error": "Profile not found"}), 404
+    return jsonify({"profile": doc.to_dict()}), 200
+
+#profile validation helper
+def validate_profile_data(username, password, email, favorite_bus_type,
+                          favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
+    if not username or not password:
+        return "please enter your username and password"
+    if not type(username) is str and type(password) is str:
+        return "username must be a string."
+    return None
+
+#profile data normalization
+def normalize_profile_data(username, password, email, favorite_bus_type,
+                           favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
+    return {
+        #required fields
+        "username": username.strip(), #username
+        "password": password.strip(), #password
+        #non-required fields
+        "email": email.strip(),
+        "preferences": {
+            "favorite_bus_type": favorite_bus_type.strip(), #enter in a specified format
+            "favorite_bus_route": favorite_bus_route.strip(), #would be an id of sorts, can visually make it easy to understand
+            "favorite_bus_stop_id": favorite_bus_stop_id.strip(), #would be a number
+            "theme": theme.strip(), #theme strings tbd
+            "alerts": alerts.strip(), #a true/false that would allow alert notifs
+        },
+        "created": created.strip() #date created if wanted to use
+    }
 
 @app.route("/stops.geojson")
 def stops_geojson():
