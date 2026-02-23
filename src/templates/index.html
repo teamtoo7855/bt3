@@ -14,6 +14,25 @@
   </style>
 </head>
 <body>
+  <!--from https://docs.mapbox.com/mapbox-gl-js/example/standard-interactions/-->
+  <style>
+    .map-overlay {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 230px;
+        padding: 10px;
+        color: #1a2224;
+        font: 12px/20px sans-serif;
+        display: none;
+    }
+
+    .map-overlay-inner {
+        background: #fff;
+        padding: 10px;
+        border-radius: 3px;
+    }
+  </style>
 
 <div style="position:absolute;z-index:2;top:12px;left:12px;background:white;padding:8px 10px;border-radius:8px;font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
   <button id="locBtn">Use my location</button>
