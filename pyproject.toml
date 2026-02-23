@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bs4>=0.0.2",
+    "firestore>=0.0.8",
     "flask>=3.1.2",
     "gtfs-realtime-bindings>=2.0.0",
     "requests>=2.32.5",
