@@ -204,6 +204,8 @@ map.on("load", () => {
   handler: ({ feature }) => {
       if (selectedPlace) {
           map.setFeatureState(selectedPlace, { select: false });
+          map.removeLayer('sel-route')
+          map.removeSource('route')
       }
       selectedPlace = feature;
       map.setFeatureState(feature, { select: true });
@@ -235,11 +237,11 @@ map.on("load", () => {
     handler: () => {
         if (selectedPlace) {
             map.setFeatureState(selectedPlace, { select: false });
+            map.removeLayer('sel-route')
+            map.removeSource('route')
             selectedPlace = null;
         }
         card.style.display = 'none';
-        map.removeLayer('sel-route')
-        map.removeSource('route')
         return false;
     }
   });
