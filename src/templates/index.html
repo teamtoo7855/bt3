@@ -39,7 +39,12 @@ mapboxgl.accessToken = "{{key}}";
 //define map box map with center being based on Burnaby
 const map = new mapboxgl.Map({
   container: "map",
-  style: "mapbox://styles/mapbox/streets-v12",
+  style: "mapbox://styles/mapbox/standard",
+  config: {
+    basemap: {
+      showTransitLabels: false
+    }
+  },
   center: [-122.98, 49.25],
   zoom: 12,
   pitch: 60,
