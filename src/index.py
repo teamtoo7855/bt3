@@ -240,6 +240,8 @@ def vehicles_geojson():
                 "vehicle_id": v.vehicle.id,
                 "vehicle_name": check_id(int(v.vehicle.id)),
                 "trip_id": v.trip.trip_id if v.trip.HasField("trip_id") else None,
+                "route_id": v.trip.route_id if v.trip.HasField("route_id") else None,
+                "direction_id": v.trip.direction_id if v.trip.HasField("direction_id") else None,
                 "bearing": v.position.bearing if v.position.HasField("bearing") else 0
             }
         })
