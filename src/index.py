@@ -237,6 +237,7 @@ def profile_create():
     created = request.form.get('created')
     #validate information
     error = validate_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
+    #error clause
     if error:
         return jsonify({"error": "missing required fields in profile creation"}), 400
     #format to JSON
