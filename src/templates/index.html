@@ -217,6 +217,25 @@ map.on("load", () => {
       selectedPlace = feature;
       map.setFeatureState(feature, { select: true });
       showCard(feature);
+
+      map.addSource("route", {
+        type: "geojson",
+        data: `/api/shape?stop_id=${feature.properties.stop_id}`
+      });
+
+      map.addLayer({
+        id: "sel-route",
+        type: "line",
+        source: "route",
+        layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        paint: {
+            'line-color': '#888',
+            'line-width': 8
+        }
+      });
   }
   });
 
