@@ -247,6 +247,8 @@ map.on("load", () => {
             selectedPlace = null;
         }
         card.style.display = 'none';
+        map.removeLayer('sel-route')
+        map.removeSource('route')
         return false;
     }
   });
