@@ -146,7 +146,27 @@ map.on("load", () => {
       map.getCanvas().style.cursor = 'pointer';
       const coordinates = e.feature.geometry.coordinates.slice();
       const description = e.feature.properties.vehicle_name;
-      popup.setLngLat(coordinates).setHTML(description).addTo(map);
+      // popup.setLngLat(coordinates).setHTML(description).addTo(map);
+
+      map.addSource("hover-route", {
+        type: "geojson",
+        data: `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction}`
+      });
+
+
+      map.addLayer({
+        id: "hover-layer",
+        type: "line",
+        source: "hover-route",
+        layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        paint: {
+            'line-color': '#888',
+            'line-width': 8
+        }
+      });
     }
   });
 
