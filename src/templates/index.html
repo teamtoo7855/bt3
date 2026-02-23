@@ -159,6 +159,56 @@ map.on("load", () => {
       }
   });
 
+  // show popup on click, from https://docs.mapbox.com/mapbox-gl-js/example/standard-interactions/
+
+  let selectedPlace;
+
+  const card = document.getElementById('properties');
+  const showCard = (feature) => {
+      const state = Object.entries(map.getFeatureState(feature))
+          .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
+          .join('');
+
+      const properties = Object.entries(feature.properties)
+          .map(([key, value]) => `<li><b>${key}</b>: ${value}</li>`)
+          .join('');
+
+      card.innerHTML = `
+              <div class="map-overlay-inner">
+                  <!-- <b>featureset</b>: <code>${feature.target.featuresetId}</code><br> -->
+                  <b>feature state</b>: <code>${state}</code>
+                  <hr><b>Properties</b>
+                  ${properties}
+              </div>`;
+
+      card.style.display = 'block';
+  };
+
+  map.addInteraction('stop-click', {
+  type: 'click',
+  target: {layerId: 'stop-points'},
+  handler: ({ feature }) => {
+      if (selectedPlace) {
+          map.setFeatureState(selectedPlace, { select: false });
+      }
+      selectedPlace = feature;
+      map.setFeatureState(feature, { select: true });
+      showCard(feature);
+  }
+  });
+
+  map.addInteraction('map-click', {
+    type: 'click',
+    handler: () => {
+        if (selectedPlace) {
+            map.setFeatureState(selectedPlace, { select: false });
+            selectedPlace = null;
+        }
+        card.style.display = 'none';
+        return false;
+    }
+  });
+
   // Auto-refresh buses every .1 seconds
   setInterval(() => {
     map.getSource("buses").setData("/vehicles.geojson");
