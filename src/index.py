@@ -92,6 +92,9 @@ def validate_email(email: str):
         return True
     return False
 
+def validate_signup_pass(pass1: str, pass2: str):
+    return pass1 == pass2
+
 @app.route("/")
 #get html page defined as index.html, also include mapbox token
 def home():
