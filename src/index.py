@@ -289,6 +289,14 @@ def profile(user):
     data = request.get_json()
 '''
 
+@app.route('/profile', methods=['GET'])
+def profile():
+    uid = validate_jwt()
+    if uid:
+        user_data = db.collection('profile').document(validate_jwt()).get().to_dict()
+        return render_template('profile.html', user_data=user_data)
+    return "not logged in", 401
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
@@ -398,7 +406,7 @@ def normalize_profile_data(username, password, email, favorite_bus_type,
         "username": username.strip(), #username
         "password": password.strip(), #password
         #non-required fields
-        "email": email.strip(),
+        "email": (email or "").strip(),
         "preferences": {
             "favorite_bus_type": favorite_bus_type.strip(), #enter in a specified format
             "favorite_bus_route": favorite_bus_route.strip(), #would be an id of sorts, can visually make it easy to understand
