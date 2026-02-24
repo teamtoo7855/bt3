@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+</style>
+
+<h1>Profile</h1>
+{% if error %}
+<p class=error><strong>Error:</strong> {{ error }}
+    {% endif %}
+
+<table>
+    <tr>
+        <td>Email</td>
+        <td>{{ user_data.email }}</td>
+    </tr>
+    <tr>
+        <td>Favourite bus route</td>
+        <td>{{ user_data.prefs.favorite_bus_route }}</td>
+    </tr>
+    <tr>
+        <td>Theme</td>
+        <td>{{ user_data.prefs.theme }}</td>
+    </tr>
+</table>
+<a href="/logout">Logout</a>
+{% endblock %}
