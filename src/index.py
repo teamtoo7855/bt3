@@ -313,13 +313,13 @@ def api_profile_stops_get_all():
         return jsonify(stops)
     return jsonify({"error": "Invalid login"}), 401
 
-@app.route('/api/profile/stops/<fav_number>', methods=['GET'])
-def api_profile_stops_get_one(fav_number):
+@app.route('/api/profile/stops/<fav_idx>', methods=['GET'])
+def api_profile_stops_get_one(fav_idx):
     uid = validate_jwt()
     if uid:
         stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
         try:
-            stop_n = stops[int(fav_number)]
+            stop_n = stops[int(fav_idx)]
             return jsonify(stop_n)
         except:
             return jsonify({"error": "No stop at index"}), 400
