@@ -95,6 +95,14 @@ def validate_email(email: str):
 def validate_signup_pass(pass1: str, pass2: str):
     return pass1 == pass2
 
+def validate_jwt():
+    try:
+        token = session['token']
+        decoded_token = auth.verify_id_token(token)
+        return decoded_token["uid"]
+    except:
+        return None
+
 @app.route("/")
 #get html page defined as index.html, also include mapbox token
 def home():
