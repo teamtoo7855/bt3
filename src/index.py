@@ -336,12 +336,15 @@ def api_profile_stops_post():
         doc = doc_ref.get()
         data = doc.to_dict()
         stops = data["prefs"]["favorite_stops"]
-        if stop_number in stops:
-            return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
-        if not stops[0]:
-            stops[0] = stop_number
-        else:
+        if not len(stops):
             stops.append(stop_number)
+        else:
+            if stop_number in stops:
+                return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
+            if not stops[0]:
+                stops[0] = stop_number
+            else:
+                stops.append(stop_number)
         doc_ref.update({"prefs": {"favorite_stops": stops}})
         return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
     return jsonify({"error": "Invalid login"}), 401
