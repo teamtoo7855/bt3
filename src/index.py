@@ -288,42 +288,57 @@ def profile(user):
         return jsonify({"error": "Invalid request, Content-Type must be application/json"}), 415
     data = request.get_json()
 '''
-#profile  creation
-@app.route('/profile/create', methods=['POST'])
-def profile_create():
-    #define enterable fields of info
-    username = request.form.get('username')
-    password = request.form.get('password')
-    email = request.form.get('email')
-    favorite_bus_type = request.form.get('favorite_bus_type')
-    favorite_bus_route = request.form.get('favorite_bus_route')
-    favorite_bus_stop_id = request.form.get('favorite_bus_stop_id')
-    theme = request.form.get('theme')
-    alerts = request.form.get('alerts')
-    created = request.form.get('created')
-    #validate information
-    error = validate_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
-    #error clause
-    if error:
-        return jsonify({"error": "missing required fields in profile creation"}), 400
-    #format to JSON
-    data = normalize_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
-    #create new profile
-    doc_ref = db.collection('profile').document(username)
-    if doc_ref.get().exists:
-        return jsonify({"error": "Profile already exists"}), 400
-    doc_ref.create(data)
-    return jsonify({"status": "success", "message": "profile has been created"}), 201
 
-@app.route('/profile/<username>', methods=['GET'])
-def profile(username):
-    #define a reference document
-    doc_ref = db.collection('profile').document(username)
-    doc = doc_ref.get()
-    #check if account exists
-    if not doc.exists:
-        return jsonify({"error": "Profile not found"}), 404
-    return jsonify({"profile": doc.to_dict()}), 200
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    error = None
+    # assemble signup payload if POST
+    if request.method == "POST":
+        email = request.form['email']
+        # check if email is an email
+        if (validate_email(email)):
+            password = request.form['password']
+            password_confirm = request.form['password_confirm']
+            # check if password meets firebase requirements
+            if not validate_password(password):
+                flash("Password needs to be at least 6 characters long")
+                return render_template('signup.html', error=error)
+            # check if password is correctly entered twice
+            if not password == password_confirm:
+                flash("Passwords don't match")
+                return render_template('signup.html', error=error)
+            user = None;
+            # try to create auth account on firebase auth, catch exception for when
+            # email exists
+            try:
+                user = auth.create_user(
+                    email=email,
+                    password=password
+                )
+            except:
+                flash("Error firebase auth. Does email already exist?", category="Error")
+                return render_template('signup.html', error=error)
+            # initialize default user data fields
+            user_data = {
+                "created": time.time(),
+                "email": email,
+                "prefs": {
+                    "favorite_bus_type": '',
+                    "favorite_bus_route": '',
+                    "favorite_bus_stop_id": '',
+                    "theme": '',
+                    "alerts": ''
+                }
+            }
+            # create new document based on uid
+            doc_ref = db.collection('profile').document(user.uid)
+            doc_ref.create(user_data)
+            flash("Signed up successfully. Log in with your email and password.", category="Success")
+            return redirect(url_for('login'))
+        else:
+            flash("Bad email", category="Error")
+    # show signup page otherwise
+    return render_template('signup.html', error=error)
 
 #profile validation helper
 def validate_profile_data(username, password, email, favorite_bus_type,
