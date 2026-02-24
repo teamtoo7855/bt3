@@ -166,6 +166,49 @@ def next_arrival():
         }
     })
 
+@app.get("/api/shape")
+def get_shape():
+    stop_id = request.args.get("stop_id", "").strip()
+    trip_id = request.args.get("trip_id", "").strip()
+    direction = request.args.get("direction", "").strip()
+    if stop_id:
+        with open("./data/stop_times.txt", "r", encoding="utf-8-sig", newline="") as f:
+            for row in csv.DictReader(f):
+                if str((row.get("stop_id")).strip()) == str(stop_id):
+                    trip_id = (row.get("trip_id")).strip()
+                    break
+
+    with open("./data/trips.txt", "r", encoding="utf-8-sig", newline="") as f:
+        shape_id = None;
+        for row in csv.DictReader(f):
+            if str((row.get("trip_id")).strip()) == str(trip_id):
+                shape_id = (row.get("shape_id")).strip()
+                with open("./data/shapes.txt", "r", encoding="utf-8-sig", newline="") as g:
+                    shape_pts = []
+                    for row in csv.DictReader(g):
+                        if (row.get("shape_id") or "").strip() == shape_id:
+                            seq = int((row.get("shape_pt_sequence") or "").strip())
+                            lon = float((row.get("shape_pt_lon") or "").strip())
+                            lat = float((row.get("shape_pt_lat") or "").strip())
+                            shape_pts.append([seq, lon, lat])
+                    shape_pts.sort()
+                    for i in shape_pts:
+                        i.pop(0)
+                    # send features to json
+                    return jsonify(
+                        {
+                            "type": "FeatureCollection",
+                            "features": [{
+                                "type": "Feature",
+                                "geometry": {
+                                    "type": "LineString",
+                                    "coordinates": shape_pts,
+                                },
+                                "properties": {},
+                            }],
+                        }
+                    )
+
 @app.route("/vehicles.geojson")
 def vehicles_geojson():
     #load the GTFS key info for vehicle positions
@@ -202,6 +245,8 @@ def vehicles_geojson():
                 "vehicle_id": v.vehicle.id,
                 "vehicle_name": check_id(int(v.vehicle.id)),
                 "trip_id": v.trip.trip_id if v.trip.HasField("trip_id") else None,
+                "route_id": v.trip.route_id if v.trip.HasField("route_id") else None,
+                "direction_id": v.trip.direction_id if v.trip.HasField("direction_id") else None,
                 "bearing": v.position.bearing if v.position.HasField("bearing") else 0
             }
         })
@@ -286,6 +331,33 @@ def normalize_profile_data(username, password, email, favorite_bus_type,
         },
         "created": created.strip() #date created if wanted to use
     }
+
+@app.route("/stops.geojson")
+def stops_geojson():
+    with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
+        features = []
+        for row in csv.DictReader(f):
+            features.append({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        (row.get("stop_lon") or "").strip(),
+                        (row.get("stop_lat") or "").strip(),
+                    ]
+                },
+                "properties": {
+                    "stop_id": (row.get("stop_id") or "").strip(),
+                    "stop_code": (row.get("stop_code") or "").strip(),
+                    "stop_name": (row.get("stop_name") or "").strip(),
+                }
+            })
+        #send features to json
+        return jsonify({
+            "type": "FeatureCollection",
+            "features": features
+        })
+
 
 
 if __name__ == "__main__":

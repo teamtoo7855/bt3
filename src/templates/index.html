@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Bus Map + 3D Buildings</title>
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js"></script>
@@ -13,6 +14,25 @@
   </style>
 </head>
 <body>
+  <!--from https://docs.mapbox.com/mapbox-gl-js/example/standard-interactions/-->
+  <style>
+    .map-overlay {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 230px;
+        padding: 10px;
+        color: #1a2224;
+        font: 12px/20px sans-serif;
+        display: none;
+    }
+
+    .map-overlay-inner {
+        background: #fff;
+        padding: 10px;
+        border-radius: 3px;
+    }
+  </style>
 
 <div style="position:absolute;z-index:2;top:12px;left:12px;background:white;padding:8px 10px;border-radius:8px;font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
   <button id="locBtn">Use my location</button>
@@ -29,6 +49,7 @@
 </div>
 
 <div id="map"></div>
+<div class="map-overlay" id="properties"></div>
 
 <script>
   //generated webpage above
@@ -39,7 +60,12 @@ mapboxgl.accessToken = "{{key}}";
 //define map box map with center being based on Burnaby
 const map = new mapboxgl.Map({
   container: "map",
-  style: "mapbox://styles/mapbox/streets-v12",
+  style: "mapbox://styles/mapbox/standard",
+  config: {
+    basemap: {
+      showTransitLabels: false
+    }
+  },
   center: [-122.98, 49.25],
   zoom: 12,
   pitch: 60,
@@ -65,6 +91,24 @@ map.on("load", () => {
     paint: {
       "circle-radius": 7,
       "circle-color": "#007cbf",
+      "circle-stroke-width": 3,
+      "circle-stroke-color": "#ffffff"
+    }
+  });
+
+  map.addSource("stops", {
+    type: "geojson",
+    data: "/stops.geojson"
+  });
+
+  map.addLayer({
+    id: "stop-points",
+    type: "circle",
+    source: "stops",
+    minzoom: 15,
+    paint: {
+      "circle-radius": 7,
+      "circle-color": "#ec5277",
       "circle-stroke-width": 3,
       "circle-stroke-color": "#ffffff"
     }
@@ -102,7 +146,27 @@ map.on("load", () => {
       map.getCanvas().style.cursor = 'pointer';
       const coordinates = e.feature.geometry.coordinates.slice();
       const description = e.feature.properties.vehicle_name;
-      popup.setLngLat(coordinates).setHTML(description).addTo(map);
+      // popup.setLngLat(coordinates).setHTML(description).addTo(map);
+
+      map.addSource("hover-route", {
+        type: "geojson",
+        data: `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction}`
+      });
+
+
+      map.addLayer({
+        id: "hover-layer",
+        type: "line",
+        source: "hover-route",
+        layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        paint: {
+            'line-color': '#888',
+            'line-width': 8
+        }
+      });
     }
   });
 
@@ -112,8 +176,74 @@ map.on("load", () => {
       target: { layerId: 'bus-points' },
       handler: () => {
           map.getCanvas().style.cursor = '';
-          popup.remove();
+          // popup.remove();
+          map.removeLayer('hover-layer')
+          map.removeSource('hover-route')
       }
+  });
+
+  // show popup on click, from https://docs.mapbox.com/mapbox-gl-js/example/standard-interactions/
+
+  let selectedPlace;
+
+  const card = document.getElementById('properties');
+  const showCard = (feature) => {
+      card.innerHTML = `
+              <div class="map-overlay-inner">
+                  <b>${feature.properties.stop_name}</b>
+                  <hr><b>About This Stop</b>
+                  <br><b>Stop Number</b>: ${feature.properties.stop_code}</p>
+              </div>`;
+
+      card.style.display = 'block';
+  };
+
+  map.addInteraction('stop-click', {
+  type: 'click',
+  target: {layerId: 'stop-points'},
+  handler: ({ feature }) => {
+      if (selectedPlace) {
+          map.setFeatureState(selectedPlace, { select: false });
+          map.removeLayer('sel-route')
+          map.removeSource('route')
+      }
+      selectedPlace = feature;
+      map.setFeatureState(feature, { select: true });
+      showCard(feature);
+
+      map.addSource("route", {
+        type: "geojson",
+        data: `/api/shape?stop_id=${feature.properties.stop_id}`
+      });
+
+      map.addLayer({
+        id: "sel-route",
+        type: "line",
+        source: "route",
+        layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        paint: {
+            'line-color': '#888',
+            'line-width': 8
+        }
+      });
+  }
+  });
+
+  map.addInteraction('map-click', {
+    type: 'click',
+    handler: () => {
+        if (selectedPlace) {
+            map.setFeatureState(selectedPlace, { select: false });
+            map.removeLayer('sel-route')
+            map.removeSource('route')
+            selectedPlace = null;
+        }
+        card.style.display = 'none';
+        return false;
+    }
   });
 
   // Auto-refresh buses every .1 seconds
