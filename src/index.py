@@ -340,6 +340,40 @@ def signup():
     # show signup page otherwise
     return render_template('signup.html', error=error)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    # assemble login payload if POST
+    if request.method == "POST":
+        email = request.form['email']
+        # check if email is email
+        if (validate_email(email)):
+            password = request.form['password']
+            # check if password meets firebase requirements
+            if not validate_password(password):
+                flash("Password needs to be at least 6 characters long")
+                return render_template('login.html', error=error)
+            payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+            }
+            res = requests.post(FIREBASE_LOGIN, json=payload)
+            if res.status_code == 200:
+                # retrieve and save token in session cookies
+                token = res.json()["idToken"]
+                session['token'] = token
+                # get logged in user's email
+                curr_email = db.collection('profile').document(validate_jwt()).get().to_dict()['email']
+                flash(f"Logged in as {curr_email}", category="Success")
+                return redirect(url_for('profile'))
+            else:
+                flash("Bad email or password", category="Error")
+        else:
+            flash("Bad email or password", category="Error")
+    # show login page otherwise
+    return render_template('login.html', error=error)
+
 #profile validation helper
 def validate_profile_data(username, password, email, favorite_bus_type,
                           favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
