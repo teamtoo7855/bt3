@@ -374,6 +374,13 @@ def login():
     # show login page otherwise
     return render_template('login.html', error=error)
 
+@app.route('/logout', methods=['GET'])
+def logout():
+    error = None
+    session.pop('token', None)
+    flash("Logged out", category = "Success")
+    return redirect(url_for('login'))
+
 #profile validation helper
 def validate_profile_data(username, password, email, favorite_bus_type,
                           favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
