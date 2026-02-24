@@ -306,7 +306,7 @@ def api_profile():
     return "not logged in", 401
 
 @app.route('/api/profile/stops', methods=['GET'])
-def api_profile_stops():
+def api_profile_stops_get_all():
     uid = validate_jwt()
     if uid:
         stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
