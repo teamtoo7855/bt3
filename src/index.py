@@ -297,6 +297,14 @@ def profile():
         return render_template('profile.html', user_data=user_data)
     return "not logged in", 401
 
+@app.route('/api/profile', methods=['GET'])
+def api_profile():
+    uid = validate_jwt()
+    if uid:
+        user_data = db.collection('profile').document(uid).get().to_dict()
+        return jsonify(user_data)
+    return "not logged in", 401
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
