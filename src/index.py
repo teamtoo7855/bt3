@@ -6,6 +6,7 @@ import pickle
 import csv
 import os
 import keys
+import re
 from tools.fetch_types import fetch_types
 from tools.fetch_gtfs_static import fetch_gtfs_static
 
