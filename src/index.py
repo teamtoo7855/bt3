@@ -87,6 +87,11 @@ def check_id(bus_id : int):
                     break
         return bus_name
 
+def validate_email(email: str):
+    if re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return True
+    return False
+
 @app.route("/")
 #get html page defined as index.html, also include mapbox token
 def home():
