@@ -293,7 +293,7 @@ def profile(user):
 def profile():
     uid = validate_jwt()
     if uid:
-        user_data = db.collection('profile').document(validate_jwt()).get().to_dict()
+        user_data = db.collection('profile').document(uid).get().to_dict()
         return render_template('profile.html', user_data=user_data)
     return "not logged in", 401
 
