@@ -305,6 +305,14 @@ def api_profile():
         return jsonify(user_data)
     return "not logged in", 401
 
+@app.route('/api/profile/stops', methods=['GET'])
+def api_profile_stops():
+    uid = validate_jwt()
+    if uid:
+        stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
+        return jsonify(stops)
+    return jsonify({"error": "Invalid login"}), 401
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
