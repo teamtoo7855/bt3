@@ -408,9 +408,9 @@ def signup():
                 "created": time.time(),
                 "email": email,
                 "prefs": {
-                    "favorite_bus_type": '',
-                    "favorite_bus_route": '',
-                    "favorite_bus_stop_id": '',
+                    "favorite_bus_types": [],
+                    "favorite_routes": [],
+                    "favorite_stops": [],
                     "theme": '',
                     "alerts": ''
                 }
@@ -483,7 +483,7 @@ def normalize_profile_data(username, password, email, favorite_bus_type,
         "username": username.strip(), #username
         "password": password.strip(), #password
         #non-required fields
-        "email": (email or "").strip(),
+        "email": email.strip(),
         "preferences": {
             "favorite_bus_type": favorite_bus_type.strip(), #enter in a specified format
             "favorite_bus_route": favorite_bus_route.strip(), #would be an id of sorts, can visually make it easy to understand
