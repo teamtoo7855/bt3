@@ -186,28 +186,57 @@ def stop_code_info(stop_code):
         routes = cur.fetchall()
         return jsonify([dict(route) for route in routes])
     
-        return jsonify({
-            "stop_code": stop_code,
-            "stop_id": stop_id,
-            "bus_number": bus_number,
-            "route_id": route_id_needed,
-            "next_arrival": None
-        })
+@app.route('/api/stop_code/<stop_code>/shapes')
+def stop_code_shapes(stop_code):
+    features = []
+    with sqlite3.connect(db_path) as con:
+        con.row_factory = sqlite3.Row
+        cur = con.cursor()
+        query = """
+            SELECT 
+                shapes.shape_id,
+                shapes.shape_pt_lat,
+                shapes.shape_pt_lon,
+                shapes.shape_pt_sequence
+            FROM shapes
+            WHERE shapes.shape_id IN (
+                SELECT DISTINCT trips.shape_id
+                FROM stops
+                JOIN stop_times ON stops.stop_id = stop_times.stop_id
+                JOIN trips ON stop_times.trip_id = trips.trip_id
+                WHERE stops.stop_code = ?
+            )
+            ORDER BY shapes.shape_id, shapes.shape_pt_sequence;
+        """
+        cur.execute(query, (stop_code,))
+        rows = cur.fetchall()
 
-    eta_unix, trip_id, route_id = best
-    return jsonify({
-        "stop_code": stop_code,
-        "stop_id": stop_id,
-        "bus_number": bus_number,
-        "route_id": route_id_needed,
-        "next_arrival": {
-            "eta_unix": eta_unix,
-            "eta_seconds": eta_unix - now,
-            "eta_minutes": round((eta_unix - now) / 60.0, 1),
-            "trip_id": trip_id,
-            "route_id": route_id
-        }
-    })
+        # Group shape points by shape_id
+        shapes = {}
+        for row in rows:
+            shape_id = row['shape_id']
+            if shape_id not in shapes:
+                shapes[shape_id] = []
+            shapes[shape_id].append([row['shape_pt_lon'], row['shape_pt_lat']])
+
+        # Build a GeoJSON feature per shape
+        for shape_id, coordinates in shapes.items():
+            feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": coordinates
+                },
+                "properties": {
+                    "shape_id": shape_id
+                }
+            }
+            features.append(feature)
+
+        return jsonify({
+            "type": "FeatureCollection",
+            "features": features
+        })
 
 @app.get("/api/shape")
 def get_shape():
