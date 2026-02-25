@@ -7,6 +7,8 @@ import csv
 import os
 import keys
 import re
+import sqlite3
+import pandas
 from tools.fetch_types import fetch_types
 from tools.fetch_gtfs_static import fetch_gtfs_static
 
@@ -37,25 +39,26 @@ except:
 
 # get GTFS static data if not already existing
 data_dir = './data'
-try:
-    file_count = len(os.listdir(data_dir))
-    if file_count != 16:
-        raise Exception
-    else:
-        print("GTFS static data found")
-except:
-    print("GTFS static data not found, fetching")
-    fetch_gtfs_static()
+db_path = os.path.join(data_dir, "static.db")
 
-def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
-    m = {}
-    with open(stops_path, "r", encoding="utf-8-sig", newline="") as f:
-        for row in csv.DictReader(f):
-            sid = (row.get("stop_id") or "").strip()
-            code = (row.get("stop_code") or "").strip()
-            if sid and code:
-                m[code] = sid
-    return m
+if not os.path.isfile(db_path):
+    print("Static data not found, fetching")
+    fetch_gtfs_static()
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    for f in os.listdir(data_dir):
+        if f.endswith('.txt'):
+            name = f.split('.')[0]
+            path = os.path.join(data_dir, f)
+            df = pandas.read_csv(path)
+            df.to_sql(name, con, if_exists="replace", index=False)
+            con.commit()
+            os.remove(path)
+            print(f'{f} imported into sqlite')
+    con.close()
+else:
+    print("Static data found")
+
 
 def load_short_to_routeid(routes_path: str) -> dict[str, str]:
     m = {}
