@@ -547,31 +547,36 @@ def normalize_profile_data(username, password, email, favorite_bus_type,
 
 @app.route("/stops.geojson")
 def stops_geojson():
-    with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
-        features = []
-        for row in csv.DictReader(f):
-            features.append({
+    features = []
+    with sqlite3.connect(db_path) as con:
+        con.row_factory = sqlite3.Row
+        cur = con.cursor()
+        query = '''
+            SELECT stop_id, stop_code, stop_name, stop_lat, stop_lon
+            FROM stops
+        '''
+        cur.execute(query)
+        stops = cur.fetchall()
+
+        for stop in stops:
+            feature = {
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
-                    "coordinates": [
-                        (row.get("stop_lon") or "").strip(),
-                        (row.get("stop_lat") or "").strip(),
-                    ]
+                    "coordinates": [stop['stop_lon'], stop['stop_lat']]
                 },
                 "properties": {
-                    "stop_id": (row.get("stop_id") or "").strip(),
-                    "stop_code": (row.get("stop_code") or "").strip(),
-                    "stop_name": (row.get("stop_name") or "").strip(),
+                    "stop_id": stop['stop_id'],
+                    "stop_code": stop['stop_code'],
+                    "stop_name": stop['stop_name']
                 }
-            })
-        #send features to json
-        return jsonify({
-            "type": "FeatureCollection",
-            "features": features
-        })
+            }
+            features.append(feature)
 
-
+    return jsonify({
+        "type": "FeatureCollection",
+        "features": features
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
