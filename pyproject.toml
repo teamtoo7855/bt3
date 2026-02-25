@@ -5,10 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "bcrypt>=5.0.0",
     "bs4>=0.0.2",
     "firestore>=0.0.8",
     "flask>=3.1.2",
     "gtfs-realtime-bindings>=2.0.0",
+    "pandas>=3.0.1",
     "requests>=2.32.5",
 ]
