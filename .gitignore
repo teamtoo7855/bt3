@@ -222,3 +222,5 @@ data/
 keys.py
 types.pkl
 serviceAccountKey.json
+.postman/
+postman/

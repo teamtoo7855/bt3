@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, flash, session, redirect, url_for
 from google.transit import gtfs_realtime_pb2
 import time
 import requests
@@ -6,11 +6,12 @@ import pickle
 import csv
 import os
 import keys
+import re
 from tools.fetch_types import fetch_types
 from tools.fetch_gtfs_static import fetch_gtfs_static
 
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
@@ -22,6 +23,8 @@ app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
 GTFS_TRIP_URL = f"https://gtfsapi.translink.ca/v3/gtfsrealtime?apikey={keys.translink_api_key}"
+WEB_API_KEY = keys.firebase_apikey
+FIREBASE_LOGIN = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={WEB_API_KEY}"
 
 # get bus type data if not already existing
 try:
@@ -84,6 +87,24 @@ def check_id(bus_id : int):
                     bus_name = f'{t['year']} {t['manufacturer']} {t['model']}'
                     break
         return bus_name
+
+def validate_email(email: str):
+    if re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return True
+    return False
+
+def validate_password(password: str):
+    if (len(password) < 6):
+        return False
+    return True
+
+def validate_jwt():
+    try:
+        token = session['token']
+        decoded_token = auth.verify_id_token(token)
+        return decoded_token["uid"]
+    except:
+        return None
 
 @app.route("/")
 #get html page defined as index.html, also include mapbox token
@@ -267,42 +288,183 @@ def profile(user):
         return jsonify({"error": "Invalid request, Content-Type must be application/json"}), 415
     data = request.get_json()
 '''
-#profile  creation
-@app.route('/profile/create', methods=['POST'])
-def profile_create():
-    #define enterable fields of info
-    username = request.form.get('username')
-    password = request.form.get('password')
-    email = request.form.get('email')
-    favorite_bus_type = request.form.get('favorite_bus_type')
-    favorite_bus_route = request.form.get('favorite_bus_route')
-    favorite_bus_stop_id = request.form.get('favorite_bus_stop_id')
-    theme = request.form.get('theme')
-    alerts = request.form.get('alerts')
-    created = request.form.get('created')
-    #validate information
-    error = validate_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
-    #error clause
-    if error:
-        return jsonify({"error": "missing required fields in profile creation"}), 400
-    #format to JSON
-    data = normalize_profile_data(username, password, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts, created)
-    #create new profile
-    doc_ref = db.collection('profile').document(username)
-    if doc_ref.get().exists:
-        return jsonify({"error": "Profile already exists"}), 400
-    doc_ref.create(data)
-    return jsonify({"status": "success", "message": "profile has been created"}), 201
 
-@app.route('/profile/<username>', methods=['GET'])
-def profile(username):
-    #define a reference document
-    doc_ref = db.collection('profile').document(username)
-    doc = doc_ref.get()
-    #check if account exists
-    if not doc.exists:
-        return jsonify({"error": "Profile not found"}), 404
-    return jsonify({"profile": doc.to_dict()}), 200
+@app.route('/profile', methods=['GET'])
+def profile():
+    uid = validate_jwt()
+    if uid:
+        user_data = db.collection('profile').document(uid).get().to_dict()
+        return render_template('profile.html', user_data=user_data)
+    return "not logged in", 401
+
+@app.route('/api/profile', methods=['GET'])
+def api_profile():
+    uid = validate_jwt()
+    if uid:
+        user_data = db.collection('profile').document(uid).get().to_dict()
+        return jsonify(user_data)
+    return "not logged in", 401
+
+@app.route('/api/profile/stops', methods=['GET'])
+def api_profile_stops_get_all():
+    uid = validate_jwt()
+    if uid:
+        stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
+        return jsonify(stops)
+    return jsonify({"error": "Invalid login"}), 401
+
+@app.route('/api/profile/stops/<fav_idx>', methods=['GET'])
+def api_profile_stops_get_one(fav_idx):
+    uid = validate_jwt()
+    if uid:
+        stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
+        try:
+            stop_n = stops[int(fav_idx)]
+            return jsonify(stop_n)
+        except:
+            return jsonify({"error": "No stop at index"}), 400
+    return jsonify({"error": "Invalid login"}), 401
+
+@app.route('/api/profile/stops', methods=['POST'])
+def api_profile_stops_post():
+    uid = validate_jwt()
+    if uid:
+        stop_number = request.form['stop_number']
+        if not stop_number:
+            return jsonify({"error": "Invalid stop number"}), 400
+        doc_ref = db.collection('profile').document(uid)
+        doc = doc_ref.get()
+        data = doc.to_dict()
+        stops = data["prefs"]["favorite_stops"]
+        if not len(stops):
+            stops.append(stop_number)
+        else:
+            if stop_number in stops:
+                return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
+            if not stops[0]:
+                stops[0] = stop_number
+            else:
+                stops.append(stop_number)
+        doc_ref.update({"prefs": {"favorite_stops": stops}})
+        return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
+    return jsonify({"error": "Invalid login"}), 401
+
+@app.route('/api/profile/stops/<fav_idx>', methods=['PUT', 'DELETE'])
+def api_profile_stops_put_del(fav_idx):
+    uid = validate_jwt()
+    if uid:
+        doc_ref = db.collection('profile').document(uid)
+        doc = doc_ref.get()
+        data = doc.to_dict()
+        stops = data["prefs"]["favorite_stops"]
+        if request.method == 'PUT':
+            try:
+                stop_number = request.form['stop_number']
+                stops[int(fav_idx)] = stop_number;
+                doc_ref.update({"prefs": {"favorite_stops": stops}})
+                return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
+            except:
+                return jsonify({"error": "No stop at index"}), 400
+        if request.method == 'DELETE':
+            try:
+                stops.pop(int(fav_idx))
+                doc_ref.update({"prefs": {"favorite_stops": stops}})
+                return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
+            except:
+                return jsonify({"error": "No stop at index"}), 400
+    return jsonify({"error": "Invalid login"}), 401
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    error = None
+    # assemble signup payload if POST
+    if request.method == "POST":
+        email = request.form['email']
+        # check if email is an email
+        if (validate_email(email)):
+            password = request.form['password']
+            password_confirm = request.form['password_confirm']
+            # check if password meets firebase requirements
+            if not validate_password(password):
+                flash("Password needs to be at least 6 characters long")
+                return render_template('signup.html', error=error)
+            # check if password is correctly entered twice
+            if not password == password_confirm:
+                flash("Passwords don't match")
+                return render_template('signup.html', error=error)
+            user = None;
+            # try to create auth account on firebase auth, catch exception for when
+            # email exists
+            try:
+                user = auth.create_user(
+                    email=email,
+                    password=password
+                )
+            except:
+                flash("Error firebase auth. Does email already exist?", category="Error")
+                return render_template('signup.html', error=error)
+            # initialize default user data fields
+            user_data = {
+                "created": time.time(),
+                "email": email,
+                "prefs": {
+                    "favorite_bus_types": [],
+                    "favorite_routes": [],
+                    "favorite_stops": [],
+                    "theme": '',
+                    "alerts": ''
+                }
+            }
+            # create new document based on uid
+            doc_ref = db.collection('profile').document(user.uid)
+            doc_ref.create(user_data)
+            flash("Signed up successfully. Log in with your email and password.", category="Success")
+            return redirect(url_for('login'))
+        else:
+            flash("Bad email", category="Error")
+    # show signup page otherwise
+    return render_template('signup.html', error=error)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    # assemble login payload if POST
+    if request.method == "POST":
+        email = request.form['email']
+        # check if email is email
+        if (validate_email(email)):
+            password = request.form['password']
+            # check if password meets firebase requirements
+            if not validate_password(password):
+                flash("Password needs to be at least 6 characters long")
+                return render_template('login.html', error=error)
+            payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+            }
+            res = requests.post(FIREBASE_LOGIN, json=payload)
+            if res.status_code == 200:
+                # retrieve and save token in session cookies
+                token = res.json()["idToken"]
+                session['token'] = token
+                # get logged in user's email
+                curr_email = db.collection('profile').document(validate_jwt()).get().to_dict()['email']
+                flash(f"Logged in as {curr_email}", category="Success")
+                return redirect(url_for('profile'))
+            else:
+                flash("Bad email or password", category="Error")
+        else:
+            flash("Bad email or password", category="Error")
+    # show login page otherwise
+    return render_template('login.html', error=error)
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    error = None
+    session.pop('token', None)
+    flash("Logged out", category = "Success")
+    return redirect(url_for('login'))
 
 #profile validation helper
 def validate_profile_data(username, password, email, favorite_bus_type,
