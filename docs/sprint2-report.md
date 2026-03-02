@@ -58,16 +58,15 @@ Based on what you **plan** vs. what you **demoed**, summarize the state of your 
 ---
 
 ## 3. Technical Summary: What Was Implemented
-
 This is a **short technical summary** of the **end-to-end feature** you built.
 
-- **1. Feature:** profile storage 
-- **Collection:** profile
-- **What it does:** stores login information and preferrences related to the bus tracking application. These preferences are to be saved and grabbed from in the future when more UI functionality is implemented.
+1. **Feature:** profile storage 
+    - **Collection:** profile
+    - **What it does:** stores login information and preferrences related to the bus tracking application. These preferences are to be saved and grabbed from in the future when more UI functionality is implemented.
   
-- **2. Feature:** [**direction_names_exceptions (Will)**]  
-- **Collection:** direction_names_exceptions
-- **What it does:** [1–2 sentence description]
+2. **Feature:** local storage for static data
+    - **Collection:** N/A (data not stored on Firestore)
+    - **What it does:** on app start, retrieves latest GTFS static data archive from TransLink and stores it in an SQLite database for quick retrieval. Additionally, tests have been written in Postman to ensure that retrieving, for example, bus stop information is faster than before.
 ### Data Model (Firestore)
 
 - **Document shape (Collection: profile):**  
