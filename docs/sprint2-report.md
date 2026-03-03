@@ -9,7 +9,7 @@
 
 - **Your Team Name:** Team 2
 - **Sprint 2 Dates:** Feb 10, 2026 -> March 3, 2026
-- **Sprint Goal:** Implement feature X with **Firestore persistence** and **basic validation**.*
+- **Sprint Goal:** Implement profile feature with **Firestore persistence**, **basic validation**, and **authentication**.
 
 ---
 
@@ -22,13 +22,11 @@
 
 ### 2.1 Sprint Board Screenshot (Filtered by Team Member)
 
-**Please provide a screenshot of your Sprint 2 board** (e.g., Trello, GitHub Projects) **filtered by each team member**. This makes the review concrete and shows shared ownership.
-
 - **fyemane Board Screenshot:**
   ![Screenshot of fyemane Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint2-board-filter-fyemane.png?raw=true)
   
 - **hi-im-vika Board Screenshot:**  
-  `images/sprint2-board-filter-[member-name-2].png`
+  ![Screenshot of fyemane Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint2-board-filter-hi-im-vika.png?raw=true)
 
 - **itsMegga Board Screenshot:**  
   ![Screenshot of fyemane Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint2-board-filter-itsMegga.png?raw=true)
@@ -86,30 +84,11 @@ This is a **short technical summary** of the **end-to-end feature** you built.
   ```
 
   **Why this structure?**
-  We wanted to establish an account for login purposes and preference based, the login purpose keys/values are those not within preferences. All data within preferences is prospective info that we think could be used for UI improvment. 
+We wanted to establish an account for login purposes and preference based, the login purpose keys/values are those not within preferences. All data within preferences is prospective info that we think could be used for UI improvment. 
 
 - **Input (Client → Server):**  
-  Example JSON the client sends:
-
-  ```json
-  {
-    "name": "New Feature",
-    "status": "pending"
-  }
-  ```
-
 - **Output (Server → Client):**  
-  Example response the client receives after a successful create or read:
-
-  ```json
-  {
-    "id": "generated-id",
-    "userId": "firebase-uid",
-    "name": "New Feature",
-    "status": "pending",
-    "createdAt": "2026-01-01T12:00:00.000Z"
-  }
-  ```
+No JSON responses for this sprint were used, there are some UI responses that guide the user towards proper usage
 
 ---
 
@@ -125,6 +104,7 @@ The following steps describe how a new favourite stop is added to a user's profi
 6. **Server** returns the data to the client.
 
 **Bounded Read:** In Sprint 2, you were required to demonstrate a **bounded read** (e.g., `.limit()`, `.where()`, or pagination). Describe what you implemented:
+
 We have not implemented pagination yet.
 
 [//]: <- **What you did:** [e.g., “We used Firestore `.limit(10)` to fetch a maximum of 10 items per request.”]>
