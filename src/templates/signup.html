@@ -1,19 +1,71 @@
 {% extends "layout.html" %}
 {% block body %}
-  <h1>Signup</h1>
-  {% if error %}
-    <p class=error><strong>Error:</strong> {{ error }}
-  {% endif %}
-  <form method=post>
-    <dl>
-      <dt>Email:
-      <dd><input type=text name=email value="{{
-          request.form.email }}">
-      <dt>Password:
-      <dd><input type=password name=password>
-      <dt>Confirm:
-      <dd><input type=password name=password_confirm>
-    </dl>
-    <p><input type=submit value=Submit>
-  </form>
+
+<h2>Create your bt3 account</h2>
+<p>Sign up and set a few preferences (optional) so you don’t re-enter them later.</p>
+
+<form method="post" action="/signup">
+  <label>Email</label>
+  <input type="email" name="email" placeholder="you@example.com" required>
+
+  <div class="row">
+    <div>
+      <label>Password</label>
+      <input type="password" name="password" placeholder="min 6 characters" required>
+    </div>
+    <div>
+      <label>Confirm Password</label>
+      <input type="password" name="password_confirm" placeholder="retype password" required>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <p><span class="pill">Preferences</span> Optional (you can change these later)</p>
+
+  <div class="row">
+    <div>
+      <label>Most-used route</label>
+      <input type="text" name="favorite_route" placeholder="e.g. 106">
+    </div>
+    <div>
+      <label>Preferred bus type</label>
+      <select name="favorite_type">
+        <option value="">No preference</option>
+        <option>Standard</option>
+        <option>Articulated</option>
+        <option>Electric</option>
+        <option>Community Shuttle</option>
+        <option>Trolley</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Theme</label>
+      <select name="theme">
+        <option value="">Default</option>
+        <option>Light</option>
+        <option>Dark</option>
+      </select>
+    </div>
+    <div>
+      <label>Alerts</label>
+      <select name="alerts">
+        <option value="">Default</option>
+        <option value="on">Enabled</option>
+        <option value="off">Disabled</option>
+      </select>
+    </div>
+  </div>
+
+  <label>Favorite stop (optional)</label>
+  <input type="text" name="favorite_stop" placeholder="Stop number, e.g. 56934">
+
+  <div class="btnbar">
+    <button type="submit">Create Account</button>
+    <a class="btn ghost" href="/login">Back to login</a>
+  </div>
+</form>
+
 {% endblock %}
