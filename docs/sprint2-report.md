@@ -9,8 +9,7 @@
 
 - **Your Team Name:** Team 2
 - **Sprint 2 Dates:** Feb 10, 2026 -> March 3, 2026
-- **Sprint Goal:** 
-    *Example: Implement feature X with **Firestore persistence** and **basic validation**.*
+- **Sprint Goal:** Implement feature X with **Firestore persistence** and **basic validation**.*
 
 ---
 
@@ -74,14 +73,14 @@ This is a **short technical summary** of the **end-to-end feature** you built.
 
   ```json
   {
-    "created": 1771916288.510268,
-            "email": "test@example.com",
+    "created": 1772574201.8982875,
+            "email": "secondnew@example.com",
             "prefs": {
-                "favorite_bus_types": [favorite_type] if favorite_type else [],
-                "favorite_routes": [favorite_route] if favorite_route else [],
-                "favorite_stops": [favorite_stop] if favorite_stop else [],
-                "theme": "dark",
-                "alerts": "on"
+                "favorite_bus_types": "Electric",
+                "favorite_routes": "555,130,25,152",
+                "favorite_stops": "51542,58438",
+                "theme": "Dark",
+                "alerts": true
             }
   }
   ```
