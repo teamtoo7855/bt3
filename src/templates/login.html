@@ -1,18 +1,29 @@
 {% extends "layout.html" %}
 {% block body %}
-  <h1>Login</h1>
-  {% if error %}
-    <p class=error><strong>Error:</strong> {{ error }}
-  {% endif %}
-  <form method=post>
-    <dl>
-      <dt>Email:
-      <dd><input type=text name=email value="{{
-          request.form.email }}">
-      <dt>Password:
-      <dd><input type=password name=password>
-    </dl>
-    <p>No account? <a href="/signup">Sign up now!</a></p>
-    <p><input type=submit value=Login>
-  </form>
+
+<h2>Sign in to bt3</h2>
+<p>Track buses live, check ETAs, and save your preferences.</p>
+
+<form method="post" action="/login">
+  <label>Email</label>
+  <input type="email" name="email" placeholder="you@example.com" required>
+
+  <label>Password</label>
+  <input type="password" name="password" placeholder="••••••••" required>
+
+  <div class="btnbar">
+    <button type="submit">Sign In</button>
+    <a class="btn ghost" href="/signup">Create account</a>
+  </div>
+</form>
+
+<div class="divider"></div>
+
+<p><span class="pill">Demo</span> No account needed. Explore the map as a guest.</p>
+<form method="post" action="/demo">
+  <div class="btnbar">
+    <button type="submit" class="btn secondary">Continue as Guest</button>
+  </div>
+</form>
+
 {% endblock %}
