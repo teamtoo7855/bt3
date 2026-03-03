@@ -25,17 +25,17 @@
 
 **Please provide a screenshot of your Sprint 2 board** (e.g., Trello, GitHub Projects) **filtered by each team member**. This makes the review concrete and shows shared ownership.
 
-- **fyemane Board Screenshot:**  
-  `images/sprint2-board-filter-[member-name-1].png`
-
+- **fyemane Board Screenshot:**
+  ![Screenshot of fyemane Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint2-board-filter-fyemane.png?raw=true)
+  
 - **hi-im-vika Board Screenshot:**  
   `images/sprint2-board-filter-[member-name-2].png`
 
 - **itsMegga Board Screenshot:**  
-  `images/sprint2-board-filter-[member-name-3].png`
+  ![Screenshot of fyemane Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint2-board-filter-itsMegga.png?raw=true)
   
 - **JCslam14 Board Screenshot:**  
-  `images/sprint2-board-filter-[member-name-4].png`
+  ![Screenshot of fyemane Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint2-board-filter-JCslam14.png?raw=true)
 
 ### 2.2 Completed vs. Not Completed (Feature-Focused)
 
