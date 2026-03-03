@@ -115,20 +115,20 @@ This is a **short technical summary** of the **end-to-end feature** you built.
 
 ## 4. End-to-End Flow (What Was Demoed)
 
-Give a **high-level, end-to-end description** of the feature flow you demonstrated. This is the same flow you walked through in the demo, in written form.
+The following steps describe how a new favourite stop is added to a user's profile.
 
-1. **Client** sends a request to the server (e.g., POST `/feature`) with a valid **payload** (JSON).
-2. **Server** validates the input and **requires authentication** (JWT verification via Firebase Admin).
-3. **Server** creates or updates a document in **Firestore**, storing it under a collection (e.g., `/features`).
-4. **Client** receives a response (e.g., 201 or 200) with the stored data.
-5. **Client** requests the data (e.g., GET `/feature/:id`) and the server reads the document **specifically** from Firestore.
+1. **Client** sends a request to the server (e.g., POST `/api/profile/stops`) with a valid **payload** (form-data).
+2. **Server** validates the input and **requires authentication** (server checks session cookie for JWT).
+3. **Server** updates the corresponding user's profile in **Firestore**, storing it in an array called `favorite_stops`.
+4. **Client** receives a response (e.g., 201 or 200) with the contents of `favorite_stops`, including the newly created stop.
+5. **Client** requests the data (e.g., GET `/api/profile/stops`) and the server reads the document **specifically** from Firestore.
 6. **Server** returns the data to the client.
 
 **Bounded Read:** In Sprint 2, you were required to demonstrate a **bounded read** (e.g., `.limit()`, `.where()`, or pagination). Describe what you implemented:
+We have not implemented pagination yet.
 
-- **What you did:** [e.g., “We used Firestore `.limit(10)` to fetch a maximum of 10 items per request.”]
-- **Why this matters:** [e.g., “This prevents unbounded scans, protects cost, and improves performance as data grows.”]
-
+[//]: <- **What you did:** [e.g., “We used Firestore `.limit(10)` to fetch a maximum of 10 items per request.”]>
+[//]: <- **Why this matters:** [e.g., “This prevents unbounded scans, protects cost, and improves performance as data grows.”]>
 ---
 
 ## 5. Sprint Retrospective: What We Learned
