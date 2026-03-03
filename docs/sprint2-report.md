@@ -163,5 +163,5 @@ Give a **high-level, end-to-end description** of the feature flow you demonstrat
 Based on what we accomplished (and what we didn’t), here are the **next Sprint 3 priorities**:
 
 - [**Priority 1**: e.g., “Add user authentication and authorization so users can only access/modify their own feature data.”]
-- [**Priority 2**: e.g., “Expand testing coverage (unit + integration) and implement clearer error handling.”]
-- [**Priority 3**: e.g., “Improve read performance with pagination and/or where clauses.”]
+- [**Priority 2**: “Implement bus route visualization with conjunction with stop favoriting”]
+- [**Priority 3**: “Add 3D models of bus to allow easy identification of bus type and size”]
