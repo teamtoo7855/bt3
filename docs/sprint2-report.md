@@ -74,11 +74,15 @@ This is a **short technical summary** of the **end-to-end feature** you built.
 
   ```json
   {
-    "id": "generated-id",
-    "userId": "firebase-uid",
-    "name": "Example Name",
-    "status": "pending",
-    "createdAt": "2026-01-01T12:00:00.000Z"
+    "created": 1771916288.510268,
+            "email": "test@example.com",
+            "prefs": {
+                "favorite_bus_types": [favorite_type] if favorite_type else [],
+                "favorite_routes": [favorite_route] if favorite_route else [],
+                "favorite_stops": [favorite_stop] if favorite_stop else [],
+                "theme": "dark",
+                "alerts": "on"
+            }
   }
   ```
 
@@ -135,18 +139,12 @@ Give a **high-level, end-to-end description** of the feature flow you demonstrat
 - Item 1: We got API endpoints working faster than expected
 - Item 2: We got security checking working well
 - Item 3: We got Firestore framework up and working quickly
-- [Item 1: e.g., “We got end-to-end persistence working faster than expected.”]
-- [Item 2: e.g., “We agreed on a consistent validation strategy for the request.”]
-- [Item 3: e.g., “Our team communication and coordination improved this sprint.”]
 
 ### 5.2 What Didn’t Go Well
 
 - Item 1: We didn't organize tasks well
 - Item 2: We didn't organize our time well
 - Item 3: We didn't coordinate with each other well
-- [Item 1: e.g., “We underestimated the time needed to set up Firebase credentials and permissions.”]
-- [Item 2: e.g., “Our tests were delayed and didn’t cover all edge cases by demo time.”]
-- [Item 3: e.g., “We had integration friction between the client and server around payload format.”]
 
 ### 5.3 Key Takeaways & Sprint 3 Actions
 
@@ -162,6 +160,6 @@ Give a **high-level, end-to-end description** of the feature flow you demonstrat
 
 Based on what we accomplished (and what we didn’t), here are the **next Sprint 3 priorities**:
 
-- [**Priority 1**: e.g., “Add user authentication and authorization so users can only access/modify their own feature data.”]
-- [**Priority 2**: “Implement bus route visualization with conjunction with stop favoriting”]
-- [**Priority 3**: “Add 3D models of bus to allow easy identification of bus type and size”]
+- **Priority 1**: Add user authentication and authorization so users can only access/modify their own feature data.
+- **Priority 2**: Implement bus route visualization with conjunction with stop favoriting
+- **Priority 3**: Add 3D models of bus to allow easy identification of bus type and size
