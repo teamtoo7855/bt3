@@ -259,14 +259,20 @@ map.on("load", () => {
   map.addInteraction('map-click', {
     type: 'click',
     handler: () => {
-        if (selectedPlace) {
-            map.setFeatureState(selectedPlace, { select: false });
-            map.removeLayer('sel-route')
-            map.removeSource('route')
-            selectedPlace = null;
-        }
-        card.style.display = 'none';
-        return false;
+      if (selectedPlace) {
+        map.setFeatureState(selectedPlace, { select: false });
+
+        // Remove all shape layers and sources
+        activeShapeIds.forEach(shapeId => {
+          map.removeLayer(`shape-${shapeId}`);
+          map.removeSource(`shape-${shapeId}`);
+        });
+        activeShapeIds = [];
+
+        selectedPlace = null;
+      }
+      card.style.display = 'none';
+      return false;
     }
   });
 
