@@ -44,19 +44,17 @@ db_path = os.path.join(app.instance_path, "static.db")
 
 if not os.path.isfile(db_path):
     print("Static data not found, fetching")
-    fetch_gtfs_static()
-    con = sqlite3.connect(db_path)
-    cur = con.cursor()
-    for f in os.listdir(data_dir):
-        if f.endswith('.txt'):
-            name = f.split('.')[0]
-            path = os.path.join(data_dir, f)
-            df = pandas.read_csv(path)
-            df.to_sql(name, con, if_exists="replace", index=False)
-            con.commit()
-            os.remove(path)
-            print(f'{f} imported into sqlite')
-    con.close()
+    fetch_gtfs_static(app.instance_path)
+    with app.app_context():
+        db.create_all()     # create database if not yet existing
+        for f in os.listdir(app.instance_path):
+            if f.endswith('.txt'):
+                name = f.split('.')[0]
+                path = os.path.join(app.instance_path, f)
+                df = pandas.read_csv(path)
+                df.to_sql(name, db.engine, if_exists="replace", index=False)
+                os.remove(path)
+                print(f'{f} imported into db')
 else:
     print("Static data found")
 
