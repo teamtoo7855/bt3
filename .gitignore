@@ -218,7 +218,6 @@ __marimo__/
 # IDE files
 .idea/
 
-data/
 keys.py
 types.pkl
 serviceAccountKey.json
