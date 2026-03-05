@@ -280,55 +280,63 @@ def stop_code_info(stop_code):
         
 @app.route('/api/stop_code/<stop_code>/shapes')
 def stop_code_shapes(stop_code):
-    features = []
-    with sqlite3.connect(db_path) as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        query = """
-            SELECT 
-                shapes.shape_id,
-                shapes.shape_pt_lat,
-                shapes.shape_pt_lon,
-                shapes.shape_pt_sequence
-            FROM shapes
-            WHERE shapes.shape_id IN (
-                SELECT DISTINCT trips.shape_id
-                FROM stops
-                JOIN stop_times ON stops.stop_id = stop_times.stop_id
-                JOIN trips ON stop_times.trip_id = trips.trip_id
-                WHERE stops.stop_code = ?
+    with app.app_context():
+        Shape    = Models["shapes"].__table__
+        Stop     = Models["stops"].__table__
+        StopTime = Models["stop_times"].__table__
+        Trip     = Models["trips"].__table__
+
+        # Subquery — get distinct shape_ids for the stop_code
+        subquery = (
+            db.select(Trip.c.shape_id)
+            .distinct()
+            .select_from(Stop)
+            .join(StopTime, Stop.c.stop_id   == StopTime.c.stop_id)
+            .join(Trip,     StopTime.c.trip_id == Trip.c.trip_id)
+            .where(Stop.c.stop_code == stop_code)
+            .subquery()
+        )
+
+        # Main query — get all shape points for those shape_ids
+        stmt = (
+            db.select(
+                Shape.c.shape_id,
+                Shape.c.shape_pt_lat,
+                Shape.c.shape_pt_lon,
+                Shape.c.shape_pt_sequence
             )
-            ORDER BY shapes.shape_id, shapes.shape_pt_sequence;
-        """
-        cur.execute(query, (stop_code,))
-        rows = cur.fetchall()
+            .where(Shape.c.shape_id.in_(db.select(subquery)))
+            .order_by(Shape.c.shape_id, Shape.c.shape_pt_sequence)
+        )
 
-        # Group shape points by shape_id
-        shapes = {}
-        for row in rows:
-            shape_id = row['shape_id']
-            if shape_id not in shapes:
-                shapes[shape_id] = []
-            shapes[shape_id].append([row['shape_pt_lon'], row['shape_pt_lat']])
+        rows = db.session.execute(stmt).all()
 
-        # Build a GeoJSON feature per shape
-        for shape_id, coordinates in shapes.items():
-            feature = {
-                "type": "Feature",
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": coordinates
-                },
-                "properties": {
-                    "shape_id": shape_id
-                }
+    # Group shape points by shape_id
+    shapes = {}
+    for row in rows:
+        if row.shape_id not in shapes:
+            shapes[row.shape_id] = []
+        shapes[row.shape_id].append([row.shape_pt_lon, row.shape_pt_lat])
+
+    # Build a GeoJSON feature per shape
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": coordinates
+            },
+            "properties": {
+                "shape_id": shape_id
             }
-            features.append(feature)
+        }
+        for shape_id, coordinates in shapes.items()
+    ]
 
-        return jsonify({
-            "type": "FeatureCollection",
-            "features": features
-        })
+    return jsonify({
+        "type": "FeatureCollection",
+        "features": features
+    })
 
 @app.route("/vehicles.geojson")
 def vehicles_geojson():
