@@ -139,7 +139,7 @@ map.on("load", () => {
     closeOnClick: false
   });
 
-  map.addInteraction('places-mouseenter-interaction', {
+  map.addInteraction('bus-mouseenter-interaction', {
     type: 'mouseenter',
     target: { layerId: 'bus-points' },
     handler: (e) => {
@@ -150,7 +150,7 @@ map.on("load", () => {
 
       map.addSource("hover-route", {
         type: "geojson",
-        data: `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction}`
+        data: `/trips/${e.feature.properties.trip_id}/shape`
       });
 
 
@@ -171,7 +171,7 @@ map.on("load", () => {
   });
 
   // clear popup when mouse no longer hovering
-  map.addInteraction('places-mouseleave-interaction', {
+  map.addInteraction('bus-mouseleave-interaction', {
       type: 'mouseleave',
       target: { layerId: 'bus-points' },
       handler: () => {
