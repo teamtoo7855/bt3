@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template, request, flash, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, Integer
 from google.transit import gtfs_realtime_pb2
 import time
 import requests
@@ -245,23 +246,38 @@ def get_trip_shape(trip_id):
 
 @app.get("/api/stop_code/<stop_code>")
 def stop_code_info(stop_code):
-    with sqlite3.connect(db_path) as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        query = '''
-            SELECT DISTINCT
-            routes.route_short_name,
-            routes.route_long_name
-            FROM stops
-            JOIN stop_times ON stops.stop_id = stop_times.stop_id
-            JOIN trips ON stop_times.trip_id = trips.trip_id
-            JOIN routes ON trips.route_id = routes.route_id
-            WHERE stops.stop_code = ?;
-        '''
-        cur.execute(query, (stop_code,))
-        routes = cur.fetchall()
-        return jsonify([dict(route) for route in routes])
-    
+    with app.app_context():
+        Stop     = Models["stops"].__table__
+        StopTime = Models["stop_times"].__table__
+        Trip     = Models["trips"].__table__
+        Route    = Models["routes"].__table__
+
+        stmt = (
+            db.select(
+                Route.c.route_short_name,
+                Route.c.route_long_name
+            )
+            .distinct()
+            .select_from(Stop)
+            .join(StopTime, Stop.c.stop_id     == StopTime.c.stop_id)
+            .join(Trip,     StopTime.c.trip_id == Trip.c.trip_id)
+            .join(Route,    Trip.c.route_id    == Route.c.route_id)
+            .where(Stop.c.stop_code == stop_code)
+        )
+
+        rows = db.session.execute(stmt).all()
+        
+        if not rows:
+            return jsonify({"error": f"No routes found for stop '{stop_code}'"}), 404
+
+        return jsonify([
+            {
+                "route_short_name": row.route_short_name,
+                "route_long_name" : row.route_long_name,
+            }
+            for row in rows
+        ])
+        
 @app.route('/api/stop_code/<stop_code>/shapes')
 def stop_code_shapes(stop_code):
     features = []
