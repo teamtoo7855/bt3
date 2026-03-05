@@ -20,6 +20,9 @@ db = firestore.client()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///static.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
