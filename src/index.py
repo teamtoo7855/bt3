@@ -40,8 +40,7 @@ except:
     fetch_types()
 
 # get GTFS static data if not already existing
-data_dir = './instance'
-db_path = os.path.join(data_dir, "static.db")
+db_path = os.path.join(app.instance_path, "static.db")
 
 if not os.path.isfile(db_path):
     print("Static data not found, fetching")
