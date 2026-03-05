@@ -596,31 +596,34 @@ def normalize_profile_data(username, password, email, favorite_bus_type,
 
 @app.route("/stops.geojson")
 def stops_geojson():
-    features = []
-    with sqlite3.connect(db_path) as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        query = '''
-            SELECT stop_id, stop_code, stop_name, stop_lat, stop_lon
-            FROM stops
-        '''
-        cur.execute(query)
-        stops = cur.fetchall()
+    with app.app_context():
+        Stop = Models["stops"].__table__
 
-        for stop in stops:
-            feature = {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [stop['stop_lon'], stop['stop_lat']]
-                },
-                "properties": {
-                    "stop_id": stop['stop_id'],
-                    "stop_code": stop['stop_code'],
-                    "stop_name": stop['stop_name']
-                }
+        stmt = db.select(
+            Stop.c.stop_id,
+            Stop.c.stop_code,
+            Stop.c.stop_name,
+            Stop.c.stop_lat,
+            Stop.c.stop_lon
+        )
+
+        stops = db.session.execute(stmt).all()
+
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [stop.stop_lon, stop.stop_lat]
+            },
+            "properties": {
+                "stop_id":   stop.stop_id,
+                "stop_code": stop.stop_code,
+                "stop_name": stop.stop_name
             }
-            features.append(feature)
+        }
+        for stop in stops
+    ]
 
     return jsonify({
         "type": "FeatureCollection",
