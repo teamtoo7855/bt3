@@ -214,24 +214,24 @@ def home():
 
 @app.route('/trips/<trip_id>/shape')
 def get_trip_shape(trip_id):
-    query = """
-        SELECT
-            shapes.shape_pt_lat,
-            shapes.shape_pt_lon,
-            shapes.shape_pt_sequence
-        FROM shapes
-        JOIN trips ON shapes.shape_id = trips.shape_id
-        WHERE trips.trip_id = ?
-        ORDER BY shapes.shape_pt_sequence
-    """
+    with app.app_context():
+        Shape = Models["shapes"].__table__
+        Trip  = Models["trips"].__table__
 
-    with sqlite3.connect(db_path) as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute(query, (trip_id,))
-        rows = cur.fetchall()
+        stmt = (
+            db.select(
+                Shape.c.shape_pt_lat,
+                Shape.c.shape_pt_lon,
+                Shape.c.shape_pt_sequence
+            )
+            .join(Trip, Shape.c.shape_id == Trip.c.shape_id)
+            .where(Trip.c.trip_id == trip_id)
+            .order_by(Shape.c.shape_pt_sequence)
+        )
 
-    coordinates = [[row['shape_pt_lon'], row['shape_pt_lat']] for row in rows]
+        rows = db.session.execute(stmt).all()
+
+    coordinates = [[row.shape_pt_lon, row.shape_pt_lat] for row in rows]
 
     return jsonify({
         "type": "Feature",
