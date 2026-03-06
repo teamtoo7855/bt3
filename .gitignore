@@ -217,6 +217,7 @@ __marimo__/
 
 # IDE files
 .idea/
+.vscode/
 
 data/
 keys.py
