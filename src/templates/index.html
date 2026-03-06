@@ -150,7 +150,7 @@ map.on("load", () => {
 
       map.addSource("hover-route", {
         type: "geojson",
-        data: `/trips/${e.feature.properties.trip_id}/shape`
+        data: `/api/trips/${e.feature.properties.trip_id}/shape`
       });
 
 

@@ -249,7 +249,7 @@ def home():
 #         }
 #     })
 
-@app.route('/trips/<trip_id>/shape')
+@app.route('/api/trips/<trip_id>/shape')
 def get_trip_shape(trip_id):
     with app.app_context():
         Shape = Models["shapes"].__table__
