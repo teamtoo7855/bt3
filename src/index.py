@@ -96,19 +96,6 @@ with app.app_context():
         print(f"Model reflected: {table_name}")
     create_gtfs_indexes(db.engine)
 
-# with sqlite3.connect(db_path) as con:
-#     cur = con.cursor()
-#     cur.execute('SELECT trip_id FROM stop_times WHERE stop_id=11088')
-#     rows = cur.fetchall()
-#     for row in rows:
-#         print(row)
-    # cur.execute('SELECT shape_pt_lat, shape_pt_lon FROM shapes WHERE shape_id=314725')
-    # rows = cur.fetchall()
-    # for row in rows:
-    #     print(row)
-
-# exit()
-
 # def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
 #     m = {}
 #     with open(stops_path, "r", encoding="utf-8-sig", newline="") as f:
