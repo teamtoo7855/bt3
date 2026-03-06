@@ -59,6 +59,22 @@ if not os.path.isfile(db_path):
 else:
     print("Static data found")
 
+Models = {}
+
+
+with app.app_context():
+    db.reflect()
+    for table_name, table in db.metadata.tables.items():
+        pk_col = Column("rowid", Integer, primary_key=True)
+        table.append_column(pk_col)
+
+        model = type(
+            table_name.capitalize(),
+            (db.Model,),
+            {"__table__": table}
+        )
+        Models[table_name] = model
+        print(f"Model reflected: {table_name}")
 # with sqlite3.connect(db_path) as con:
 #     cur = con.cursor()
 #     cur.execute('SELECT trip_id FROM stop_times WHERE stop_id=11088')
