@@ -106,10 +106,208 @@ def validate_jwt():
     except:
         return None
 
+def is_demo():
+    return True if session.get("demo") else False
+
+def require_login_or_demo():
+    """
+    If user is logged in -> return uid
+    If demo mode -> return "demo"
+    Else -> None
+    """
+    uid = validate_jwt()
+    if uid:
+        return uid
+    if is_demo():
+        return "demo"
+    return None
+
 @app.route("/")
 #get html page defined as index.html, also include mapbox token
 def home():
+    if not require_login_or_demo():
+        return redirect(url_for("login"))
     return render_template("index.html", key=keys.mapbox_access_token)
+
+# -----------------------------
+# DEMO MODE
+# -----------------------------
+@app.post("/demo")
+def demo():
+    # demo means: user can access map, but no profile writes
+    session.pop("token", None)
+    session["demo"] = True
+    flash("Demo mode enabled (guest).", category="Success")
+    return redirect(url_for("home"))
+
+# -----------------------------
+# AUTH: SIGNUP
+# -----------------------------
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    error = None
+    if request.method == "POST":
+        email = (request.form.get('email') or "").strip()
+        if not validate_email(email):
+            flash("Please enter a valid email.", category="Error")
+            return render_template('signup.html', error=error)
+
+        password = request.form.get('password') or ""
+        password_confirm = request.form.get('password_confirm') or ""
+
+        if not validate_password(password):
+            flash("Password needs to be at least 6 characters long.", category="Error")
+            return render_template('signup.html', error=error)
+
+        if password != password_confirm:
+            flash("Passwords don't match.", category="Error")
+            return render_template('signup.html', error=error)
+
+        # NEW: preferences (optional)
+        favorite_route = (request.form.get("favorite_route") or "").strip()
+        favorite_type = (request.form.get("favorite_type") or "").strip()
+        theme = (request.form.get("theme") or "").strip()
+        alerts = (request.form.get("alerts") or "").strip()  # "on"/"off"/""
+        favorite_stop = (request.form.get("favorite_stop") or "").strip()
+
+        # create auth account
+        try:
+            user = auth.create_user(email=email, password=password)
+        except:
+            flash("Error creating account. Email may already exist.", category="Error")
+            return render_template('signup.html', error=error)
+
+        # normalize alert value
+        alerts_value = ""
+        if alerts == "on":
+            alerts_value = True
+        elif alerts == "off":
+            alerts_value = False
+
+        user_data = {
+            "created": time.time(),
+            "email": email,
+            "prefs": {
+                "favorite_bus_types": [favorite_type] if favorite_type else [],
+                "favorite_routes": [favorite_route] if favorite_route else [],
+                "favorite_stops": [favorite_stop] if favorite_stop else [],
+                "theme": theme,
+                "alerts": alerts_value
+            }
+        }
+
+        # store profile under uid
+        doc_ref = db.collection('profile').document(user.uid)
+        doc_ref.set(user_data)
+
+        flash("Signed up successfully. Please log in.", category="Success")
+        return redirect(url_for('login'))
+
+    return render_template('signup.html', error=error)
+
+# -----------------------------
+# AUTH: LOGIN
+# -----------------------------
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == "POST":
+        email = (request.form.get('email') or "").strip()
+        password = request.form.get('password') or ""
+
+        if not validate_email(email) or not validate_password(password):
+            flash("Bad email or password.", category="Error")
+            return render_template('login.html', error=error)
+
+        payload = {"email": email, "password": password, "returnSecureToken": True}
+        res = requests.post(FIREBASE_LOGIN, json=payload)
+
+        if res.status_code == 200:
+            session["demo"] = False  # exit demo if previously on
+            session['token'] = res.json()["idToken"]
+            uid = validate_jwt()
+            if uid:
+                curr_email = db.collection('profile').document(uid).get().to_dict().get('email', email)
+                flash(f"Logged in as {curr_email}", category="Success")
+            return redirect(url_for('profile'))
+        else:
+            flash("Bad email or password.", category="Error")
+
+    return render_template('login.html', error=error)
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    session.pop('token', None)
+    session.pop('demo', None)
+    flash("Logged out", category="Success")
+    return redirect(url_for('login'))
+
+# -----------------------------
+# PROFILE (GET + POST edit)
+# -----------------------------
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    uid = validate_jwt()
+    if not uid:
+        return redirect(url_for("login"))
+
+    doc_ref = db.collection('profile').document(uid)
+    doc = doc_ref.get()
+    user_data = doc.to_dict() if doc.exists else None
+
+    if request.method == "POST":
+        # Update preferences from form
+        favorite_route = (request.form.get("favorite_route") or "").strip()
+        favorite_type = (request.form.get("favorite_type") or "").strip()
+        theme = (request.form.get("theme") or "").strip()
+        alerts = (request.form.get("alerts") or "").strip()
+        add_stop = (request.form.get("add_stop") or "").strip()
+
+        prefs = (user_data or {}).get("prefs", {})
+        favorite_routes = prefs.get("favorite_routes", []) or []
+        favorite_types = prefs.get("favorite_bus_types", []) or []
+        favorite_stops = prefs.get("favorite_stops", []) or []
+
+        # single "main" values as index 0
+        if favorite_route:
+            if len(favorite_routes) == 0:
+                favorite_routes = [favorite_route]
+            else:
+                favorite_routes[0] = favorite_route
+
+        if favorite_type:
+            if len(favorite_types) == 0:
+                favorite_types = [favorite_type]
+            else:
+                favorite_types[0] = favorite_type
+
+        # theme (string)
+        prefs["theme"] = theme
+
+        # alerts normalize
+        if alerts == "on":
+            prefs["alerts"] = True
+        elif alerts == "off":
+            prefs["alerts"] = False
+        else:
+            prefs["alerts"] = prefs.get("alerts", "")
+
+        # add stop (append if new)
+        if add_stop:
+            if add_stop not in favorite_stops:
+                favorite_stops.append(add_stop)
+
+        prefs["favorite_routes"] = favorite_routes
+        prefs["favorite_bus_types"] = favorite_types
+        prefs["favorite_stops"] = favorite_stops
+
+        doc_ref.update({"prefs": prefs})
+        flash("Profile updated.", category="Success")
+
+        # reload
+        user_data = doc_ref.get().to_dict()
+
+    return render_template('profile.html', user_data=user_data)
 
 @app.get("/api/next_arrival")
 def next_arrival():
@@ -289,21 +487,21 @@ def profile(user):
     data = request.get_json()
 '''
 
-@app.route('/profile', methods=['GET'])
-def profile():
-    uid = validate_jwt()
-    if uid:
-        user_data = db.collection('profile').document(uid).get().to_dict()
-        return render_template('profile.html', user_data=user_data)
-    return "not logged in", 401
+# @app.route('/profile', methods=['GET'])
+# def profile():
+#     uid = validate_jwt()
+#     if uid:
+#         user_data = db.collection('profile').document(uid).get().to_dict()
+#         return render_template('profile.html', user_data=user_data)
+#     return "not logged in", 401
 
-@app.route('/api/profile', methods=['GET'])
-def api_profile():
-    uid = validate_jwt()
-    if uid:
-        user_data = db.collection('profile').document(uid).get().to_dict()
-        return jsonify(user_data)
-    return "not logged in", 401
+# @app.route('/api/profile', methods=['GET'])
+# def api_profile():
+#     uid = validate_jwt()
+#     if uid:
+#         user_data = db.collection('profile').document(uid).get().to_dict()
+#         return jsonify(user_data)
+#     return "not logged in", 401
 
 @app.route('/api/profile/stops', methods=['GET'])
 def api_profile_stops_get_all():
@@ -374,97 +572,97 @@ def api_profile_stops_put_del(fav_idx):
                 return jsonify({"error": "No stop at index"}), 400
     return jsonify({"error": "Invalid login"}), 401
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    error = None
-    # assemble signup payload if POST
-    if request.method == "POST":
-        email = request.form['email']
-        # check if email is an email
-        if (validate_email(email)):
-            password = request.form['password']
-            password_confirm = request.form['password_confirm']
-            # check if password meets firebase requirements
-            if not validate_password(password):
-                flash("Password needs to be at least 6 characters long")
-                return render_template('signup.html', error=error)
-            # check if password is correctly entered twice
-            if not password == password_confirm:
-                flash("Passwords don't match")
-                return render_template('signup.html', error=error)
-            user = None;
-            # try to create auth account on firebase auth, catch exception for when
-            # email exists
-            try:
-                user = auth.create_user(
-                    email=email,
-                    password=password
-                )
-            except:
-                flash("Error firebase auth. Does email already exist?", category="Error")
-                return render_template('signup.html', error=error)
-            # initialize default user data fields
-            user_data = {
-                "created": time.time(),
-                "email": email,
-                "prefs": {
-                    "favorite_bus_types": [],
-                    "favorite_routes": [],
-                    "favorite_stops": [],
-                    "theme": '',
-                    "alerts": ''
-                }
-            }
-            # create new document based on uid
-            doc_ref = db.collection('profile').document(user.uid)
-            doc_ref.create(user_data)
-            flash("Signed up successfully. Log in with your email and password.", category="Success")
-            return redirect(url_for('login'))
-        else:
-            flash("Bad email", category="Error")
-    # show signup page otherwise
-    return render_template('signup.html', error=error)
+# @app.route('/signup', methods=['GET', 'POST'])
+# def signup():
+#     error = None
+#     # assemble signup payload if POST
+#     if request.method == "POST":
+#         email = request.form['email']
+#         # check if email is an email
+#         if (validate_email(email)):
+#             password = request.form['password']
+#             password_confirm = request.form['password_confirm']
+#             # check if password meets firebase requirements
+#             if not validate_password(password):
+#                 flash("Password needs to be at least 6 characters long")
+#                 return render_template('signup.html', error=error)
+#             # check if password is correctly entered twice
+#             if not password == password_confirm:
+#                 flash("Passwords don't match")
+#                 return render_template('signup.html', error=error)
+#             user = None;
+#             # try to create auth account on firebase auth, catch exception for when
+#             # email exists
+#             try:
+#                 user = auth.create_user(
+#                     email=email,
+#                     password=password
+#                 )
+#             except:
+#                 flash("Error firebase auth. Does email already exist?", category="Error")
+#                 return render_template('signup.html', error=error)
+#             # initialize default user data fields
+#             user_data = {
+#                 "created": time.time(),
+#                 "email": email,
+#                 "prefs": {
+#                     "favorite_bus_types": [],
+#                     "favorite_routes": [],
+#                     "favorite_stops": [],
+#                     "theme": '',
+#                     "alerts": ''
+#                 }
+#             }
+#             # create new document based on uid
+#             doc_ref = db.collection('profile').document(user.uid)
+#             doc_ref.create(user_data)
+#             flash("Signed up successfully. Log in with your email and password.", category="Success")
+#             return redirect(url_for('login'))
+#         else:
+#             flash("Bad email", category="Error")
+#     # show signup page otherwise
+#     return render_template('signup.html', error=error)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    # assemble login payload if POST
-    if request.method == "POST":
-        email = request.form['email']
-        # check if email is email
-        if (validate_email(email)):
-            password = request.form['password']
-            # check if password meets firebase requirements
-            if not validate_password(password):
-                flash("Password needs to be at least 6 characters long")
-                return render_template('login.html', error=error)
-            payload = {
-            "email": email,
-            "password": password,
-            "returnSecureToken": True
-            }
-            res = requests.post(FIREBASE_LOGIN, json=payload)
-            if res.status_code == 200:
-                # retrieve and save token in session cookies
-                token = res.json()["idToken"]
-                session['token'] = token
-                # get logged in user's email
-                curr_email = db.collection('profile').document(validate_jwt()).get().to_dict()['email']
-                flash(f"Logged in as {curr_email}", category="Success")
-                return redirect(url_for('profile'))
-            else:
-                flash("Bad email or password", category="Error")
-        else:
-            flash("Bad email or password", category="Error")
-    # show login page otherwise
-    return render_template('login.html', error=error)
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     error = None
+#     # assemble login payload if POST
+#     if request.method == "POST":
+#         email = request.form['email']
+#         # check if email is email
+#         if (validate_email(email)):
+#             password = request.form['password']
+#             # check if password meets firebase requirements
+#             if not validate_password(password):
+#                 flash("Password needs to be at least 6 characters long")
+#                 return render_template('login.html', error=error)
+#             payload = {
+#             "email": email,
+#             "password": password,
+#             "returnSecureToken": True
+#             }
+#             res = requests.post(FIREBASE_LOGIN, json=payload)
+#             if res.status_code == 200:
+#                 # retrieve and save token in session cookies
+#                 token = res.json()["idToken"]
+#                 session['token'] = token
+#                 # get logged in user's email
+#                 curr_email = db.collection('profile').document(validate_jwt()).get().to_dict()['email']
+#                 flash(f"Logged in as {curr_email}", category="Success")
+#                 return redirect(url_for('profile'))
+#             else:
+#                 flash("Bad email or password", category="Error")
+#         else:
+#             flash("Bad email or password", category="Error")
+#     # show login page otherwise
+#     return render_template('login.html', error=error)
 
-@app.route('/logout', methods=['GET'])
-def logout():
-    error = None
-    session.pop('token', None)
-    flash("Logged out", category = "Success")
-    return redirect(url_for('login'))
+# @app.route('/logout', methods=['GET'])
+# def logout():
+#     error = None
+#     session.pop('token', None)
+#     flash("Logged out", category = "Success")
+#     return redirect(url_for('login'))
 
 #profile validation helper
 def validate_profile_data(username, password, email, favorite_bus_type,
