@@ -1,12 +1,210 @@
 <!doctype html>
-<title>My Application</title>
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for category, message in messages %}
-      <li class="{{ category }}">{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-{% block body %}{% endblock %}
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>bt3</title>
+
+  <style>
+    :root{
+      --bg:#f4f6f9;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --primary:#007cbf;
+      --primary2:#005f91;
+      --danger:#b91c1c;
+      --success:#047857;
+      --shadow:0 10px 25px rgba(0,0,0,.08);
+      --radius:16px;
+      --input-h: 42px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+    }
+
+    /* Polished card sizing */
+    .card{
+      width: min(460px, 96%);
+      background:var(--card);
+      border:1px solid rgba(17,24,39,.08);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:26px;
+    }
+
+    h1,h2{
+      margin:0 0 10px 0;
+      letter-spacing:-0.02em;
+    }
+
+    p{
+      margin:6px 0 12px 0;
+      color:var(--muted);
+      line-height:1.35;
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      margin:12px 0 6px;
+    }
+
+    /* ✅ Consistent input sizing + height */
+    input, select{
+      width:100%;
+      height: var(--input-h);
+      padding: 10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      font-size:14px;
+      background:white;
+      outline:none;
+    }
+
+    input::placeholder{
+      color:#9ca3af;
+    }
+
+    input:focus, select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px rgba(59,130,246,.15);
+    }
+
+    /* ✅ Perfect alignment left/right */
+    .row{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 520px){
+      .card{ padding:20px; }
+      .row{ grid-template-columns: 1fr; }
+    }
+
+    .divider{
+      height:1px;
+      background:rgba(17,24,39,.10);
+      margin:18px 0;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(17,24,39,.12);
+      font-size:12px;
+      color:var(--muted);
+      background:#fafafa;
+      gap:6px;
+    }
+
+    .btnbar{
+      display:flex;
+      gap:12px;
+      margin-top:18px;
+      flex-wrap:wrap;
+    }
+
+    button,.btn{
+      appearance:none;
+      border:0;
+      border-radius:12px;
+      padding:10px 14px;
+      background:var(--primary);
+      color:white;
+      font-weight:700;
+      cursor:pointer;
+      font-size:14px;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      height: 44px;
+      min-width: 140px;
+    }
+
+    button:hover,.btn:hover{
+      background:var(--primary2);
+    }
+
+    .btn.ghost{
+      background:transparent;
+      color:var(--text);
+      border:1px solid rgba(17,24,39,.14);
+    }
+
+    .btn.ghost:hover{
+      background:#f3f4f6;
+    }
+
+    /* Flash messages */
+    .flashes{
+      list-style:none;
+      padding:0;
+      margin:0 0 14px 0;
+      display:grid;
+      gap:10px;
+    }
+
+    .flashes li{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(17,24,39,.12);
+      background:#fafafa;
+      font-size:13px;
+    }
+
+    .flashes .Success{
+      border-color:rgba(4,120,87,.22);
+      background:rgba(4,120,87,.08);
+      color:var(--success);
+    }
+
+    .flashes .Error{
+      border-color:rgba(185,28,28,.22);
+      background:rgba(185,28,28,.08);
+      color:var(--danger);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      {% block body %}{% endblock %}
+
+    </div>
+  </div>
+</body>
+</html>
