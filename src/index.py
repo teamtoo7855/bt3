@@ -65,9 +65,9 @@ Models = {}
 def create_gtfs_indexes(engine):
     indexes = [
         # index for route lookup from stop code
+        Index("idx_stops_stop_code",    Models["stops"].__table__.c.stop_code),
         Index("idx_stop_times_stop_id", Models["stop_times"].__table__.c.stop_id),
         Index("idx_stop_times_trip_id", Models["stop_times"].__table__.c.trip_id),
-        Index("idx_trips_route_id",     Models["trips"].__table__.c.route_id),
 
         # index for shape lookup from trip id
         Index("idx_trips_shape_id",  Models["trips"].__table__.c.shape_id),
