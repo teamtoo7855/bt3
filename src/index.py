@@ -7,6 +7,8 @@ import csv
 import os
 import keys
 import re
+
+from blueprints.data_geojson import data_geojson_bp
 from tools.fetch_types import fetch_types
 from tools.fetch_gtfs_static import fetch_gtfs_static
 
@@ -721,7 +723,7 @@ app.register_blueprint(dashboard_bp)  # Handles root route /
 app.register_blueprint(auth_bp)
 app.register_blueprint(profile_bp)
 app.register_blueprint(api_bp)
-app.register_blueprint(data_bp)
+app.register_blueprint(data_geojson_bp)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

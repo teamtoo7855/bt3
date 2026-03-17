@@ -1,11 +1,9 @@
-from utils.auth import get_current_user
-from utils.profile import get_profile_data, set_profile
-from utils.validation import normalize_profile_data, validate_profile_data
+
 #from app import app
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
+from flask import render_template, request, redirect, url_for, flash
 from . import profile_bp
 
-
+from firebase import db
 
 
 # -----------------------------
