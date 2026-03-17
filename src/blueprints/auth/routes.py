@@ -7,6 +7,7 @@ import requests
 import time
 from config import Config
 from utils.validation import validate_email, validate_password
+from decorators.auth import require_jwt
 FIREBASE_LOGIN = Config.FIREBASE_LOGIN
 # -----------------------------
 # AUTH: SIGNUP

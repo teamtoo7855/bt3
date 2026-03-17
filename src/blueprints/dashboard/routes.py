@@ -1,5 +1,4 @@
-from utils.auth import get_current_user
-from utils.profile import get_profile_data
+
 #from app import app
 from config import Config
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response

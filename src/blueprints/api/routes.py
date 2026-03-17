@@ -10,6 +10,7 @@ import re
 import json
 from config import Config
 from utils.data import STOPCODE_TO_STOPID, SHORT_TO_ROUTEID
+from decorators.auth import require_jwt
 
 GTFS_TRIP_URL = Config.GTFS_TRIP_URL
 
@@ -137,27 +138,58 @@ def get_shape():
 
 
 @api_bp.route('/profile/stops', methods=['GET'])
+@require_jwt
 def api_profile_stops_get_all():
-    uid = validate_jwt()
-    if uid:
-        stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
-        return jsonify(stops)
-    return jsonify({"error": "Invalid login"}), 401
+    stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
+    return jsonify(stops)
+    #uid = validate_jwt()
+    #if uid:
+     #   stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
+      #  return jsonify(stops)
+    #return jsonify({"error": "Invalid login"}), 401
 
 @api_bp.route('/profile/stops/<fav_idx>', methods=['GET'])
+@require_jwt
 def api_profile_stops_get_one(fav_idx):
-    uid = validate_jwt()
-    if uid:
-        stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
-        try:
-            stop_n = stops[int(fav_idx)]
-            return jsonify(stop_n)
-        except:
-            return jsonify({"error": "No stop at index"}), 400
+    stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
+    try:
+        stop_n = stops[int(fav_idx)]
+        return jsonify(stop_n)
+    except:
+        return jsonify({"error": "No stop at index"}), 400
+    #uid = validate_jwt()
+    #if uid:
+     #   stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
+      #  try:
+       #     stop_n = stops[int(fav_idx)]
+        #    return jsonify(stop_n)
+        #except:
+         #   return jsonify({"error": "No stop at index"}), 400
     return jsonify({"error": "Invalid login"}), 401
 
 @api_bp.route('/profile/stops', methods=['POST'])
+@require_jwt
 def api_profile_stops_post():
+    stop_number = request.form['stop_number']
+    if not stop_number:
+        return jsonify({"error": "Invalid stop number"}), 400
+    doc_ref = db.collection('profile').document(uid)
+    doc = doc_ref.get()
+    data = doc.to_dict()
+    stops = data["prefs"]["favorite_stops"]
+    if not len(stops):
+        stops.append(stop_number)
+    else:
+        if stop_number in stops:
+            return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
+        if not stops[0]:
+            stops[0] = stop_number
+        else:
+            stops.append(stop_number)
+    doc_ref.update({"prefs": {"favorite_stops": stops}})
+    return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
+
+    '''
     uid = validate_jwt()
     if uid:
         stop_number = request.form['stop_number']
@@ -179,9 +211,32 @@ def api_profile_stops_post():
         doc_ref.update({"prefs": {"favorite_stops": stops}})
         return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
     return jsonify({"error": "Invalid login"}), 401
+    '''
 
 @api_bp.route('/api/profile/stops/<fav_idx>', methods=['PUT', 'DELETE'])
+@require_jwt
 def api_profile_stops_put_del(fav_idx):
+    doc_ref = db.collection('profile').document(uid)
+    doc = doc_ref.get()
+    data = doc.to_dict()
+    stops = data["prefs"]["favorite_stops"]
+    if request.method == 'PUT':
+        try:
+            stop_number = request.form['stop_number']
+            stops[int(fav_idx)] = stop_number;
+            doc_ref.update({"prefs": {"favorite_stops": stops}})
+            return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
+        except:
+            return jsonify({"error": "No stop at index"}), 400
+    if request.method == 'DELETE':
+        try:
+            stops.pop(int(fav_idx))
+            doc_ref.update({"prefs": {"favorite_stops": stops}})
+            return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
+        except:
+            return jsonify({"error": "No stop at index"}), 400
+
+    '''
     uid = validate_jwt()
     if uid:
         doc_ref = db.collection('profile').document(uid)
@@ -204,3 +259,4 @@ def api_profile_stops_put_del(fav_idx):
             except:
                 return jsonify({"error": "No stop at index"}), 400
     return jsonify({"error": "Invalid login"}), 401
+    '''
