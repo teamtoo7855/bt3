@@ -6,7 +6,7 @@ from . import auth_bp
 import requests
 import time
 from config import Config
-
+from utils.validation import validate_email, validate_password
 FIREBASE_LOGIN = Config.FIREBASE_LOGIN
 # -----------------------------
 # AUTH: SIGNUP
