@@ -2,21 +2,22 @@
 #from app import app
 from config import Config
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, flash
+
+from decorators.auth import require_jwt
 from . import dashboard_bp
 
 
 def is_demo():
     return True if session.get("demo") else False
 
-def require_login_or_demo():
+@require_jwt
+def require_login_or_demo(uid: str):
     """
     If user is logged in -> return uid
     If demo mode -> return "demo"
     Else -> None
     """
-    uid = validate_jwt()
-    if uid:
-        return uid
+    return uid
     if is_demo():
         return "demo"
     return None
