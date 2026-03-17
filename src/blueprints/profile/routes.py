@@ -11,7 +11,7 @@ from firebase import db
 # -----------------------------
 @profile_bp.route('/profile', methods=['GET', 'POST'])
 @require_jwt
-def profile():
+def profile(uid : str):
 
     #uid = validate_jwt()
     #if not uid:
