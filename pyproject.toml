@@ -10,5 +10,6 @@ dependencies = [
     "firestore>=0.0.8",
     "flask>=3.1.2",
     "gtfs-realtime-bindings>=2.0.0",
+    "python-dotenv>=1.2.2",
     "requests>=2.32.5",
 ]

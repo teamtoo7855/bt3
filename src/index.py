@@ -13,19 +13,22 @@ from tools.fetch_gtfs_static import fetch_gtfs_static
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 
+'''
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
-
+'''
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
+
+#app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
 # Replace this with your agency's GTFS-Realtime vehicle positions URL
+'''
 GTFS_VEHICLE_URL = f'https://gtfsapi.translink.ca/v3/gtfsposition?apikey={keys.translink_api_key}'
 GTFS_TRIP_URL = f"https://gtfsapi.translink.ca/v3/gtfsrealtime?apikey={keys.translink_api_key}"
 WEB_API_KEY = keys.firebase_apikey
 FIREBASE_LOGIN = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={WEB_API_KEY}"
-
+'''
 # get bus type data if not already existing
 try:
     with open('types.pkl', 'rb') as f:
@@ -474,34 +477,7 @@ def vehicles_geojson():
         "type": "FeatureCollection",
         "features": features
     })
-'''
-@app.route('api/profile', methods=['GET', 'POST'])
-def profile(user):
-    doc_ref = db.collection('profile').document(user)
-    if request.method == 'GET':
-        doc = doc_ref.get()
-        if not doc.exists:
-            return jsonify({"error": "Profile not found"}), 404
-    if not request.is_json:
-        return jsonify({"error": "Invalid request, Content-Type must be application/json"}), 415
-    data = request.get_json()
-'''
 
-# @app.route('/profile', methods=['GET'])
-# def profile():
-#     uid = validate_jwt()
-#     if uid:
-#         user_data = db.collection('profile').document(uid).get().to_dict()
-#         return render_template('profile.html', user_data=user_data)
-#     return "not logged in", 401
-
-# @app.route('/api/profile', methods=['GET'])
-# def api_profile():
-#     uid = validate_jwt()
-#     if uid:
-#         user_data = db.collection('profile').document(uid).get().to_dict()
-#         return jsonify(user_data)
-#     return "not logged in", 401
 
 @app.route('/api/profile/stops', methods=['GET'])
 def api_profile_stops_get_all():
