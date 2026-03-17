@@ -2,7 +2,7 @@
 #from app import app
 from flask import render_template, request, redirect, url_for, flash
 from . import profile_bp
-
+from decorators.auth import require_jwt
 from firebase import db
 
 
@@ -10,10 +10,12 @@ from firebase import db
 # PROFILE (GET + POST edit)
 # -----------------------------
 @profile_bp.route('/profile', methods=['GET', 'POST'])
+@require_jwt
 def profile():
-    uid = validate_jwt()
-    if not uid:
-        return redirect(url_for("login"))
+
+    #uid = validate_jwt()
+    #if not uid:
+     #   return redirect(url_for("login"))
 
     doc_ref = db.collection('profile').document(uid)
     doc = doc_ref.get()
