@@ -29,6 +29,8 @@ GTFS_TRIP_URL = f"https://gtfsapi.translink.ca/v3/gtfsrealtime?apikey={keys.tran
 WEB_API_KEY = keys.firebase_apikey
 FIREBASE_LOGIN = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={WEB_API_KEY}"
 '''
+
+'''
 # get bus type data if not already existing
 try:
     with open('types.pkl', 'rb') as f:
@@ -90,7 +92,7 @@ def check_id(bus_id : int):
                     bus_name = f'{t['year']} {t['manufacturer']} {t['model']}'
                     break
         return bus_name
-
+'''
 
 '''
 def validate_email(email: str):
@@ -435,6 +437,8 @@ def get_shape():
                         }
                     )
 '''
+
+'''
 @app.route("/vehicles.geojson")
 def vehicles_geojson():
     #load the GTFS key info for vehicle positions
@@ -481,7 +485,7 @@ def vehicles_geojson():
         "type": "FeatureCollection",
         "features": features
     })
-
+'''
 '''
 @app.route('/api/profile/stops', methods=['GET'])
 def api_profile_stops_get_all():
@@ -673,6 +677,7 @@ def normalize_profile_data(username, password, email, favorite_bus_type,
         "created": created.strip() #date created if wanted to use
     }
 '''
+'''
 @app.route("/stops.geojson")
 def stops_geojson():
     with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
@@ -698,8 +703,28 @@ def stops_geojson():
             "type": "FeatureCollection",
             "features": features
         })
+'''
+from flask import Flask
+from config import Config
 
+# Import blueprints
+from blueprints.auth import auth_bp
+from blueprints.profile import profile_bp
+from blueprints.dashboard import dashboard_bp
+from blueprints.api import api_bp
 
+app = Flask(__name__)
+app.config.from_object(Config)
+
+# Register blueprints
+app.register_blueprint(dashboard_bp)  # Handles root route /
+app.register_blueprint(auth_bp)
+app.register_blueprint(profile_bp)
+app.register_blueprint(api_bp)
+app.register_blueprint(data_bp)
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,9 +1,18 @@
+from . import api_bp
+from flask import Flask, jsonify, render_template, request, flash, session, redirect, url_for
+from google.transit import gtfs_realtime_pb2
+import requests
+import csv
+import time
+from firebase_admin import credentials, firestore, auth
+from firebase import db
+import re
+import json
+from config import Config
 
+GTFS_TRIP_URL = Config.GTFS_TRIP_URL
 
-
-
-
-@app.get("/api/next_arrival")
+@api_bp.get("/next_arrival")
 def next_arrival():
     stop_code = request.args.get("stop_id", "").strip()
     bus_number = request.args.get("bus_number", "").strip()
@@ -79,7 +88,7 @@ def next_arrival():
         }
     })
 
-@app.get("/api/shape")
+@api_bp.get("/shape")
 def get_shape():
     stop_id = request.args.get("stop_id", "").strip()
     trip_id = request.args.get("trip_id", "").strip()
@@ -126,7 +135,7 @@ def get_shape():
 
 
 
-@app.route('/api/profile/stops', methods=['GET'])
+@api_bp.route('/profile/stops', methods=['GET'])
 def api_profile_stops_get_all():
     uid = validate_jwt()
     if uid:
@@ -134,7 +143,7 @@ def api_profile_stops_get_all():
         return jsonify(stops)
     return jsonify({"error": "Invalid login"}), 401
 
-@app.route('/api/profile/stops/<fav_idx>', methods=['GET'])
+@api_bp.route('/profile/stops/<fav_idx>', methods=['GET'])
 def api_profile_stops_get_one(fav_idx):
     uid = validate_jwt()
     if uid:
@@ -146,7 +155,7 @@ def api_profile_stops_get_one(fav_idx):
             return jsonify({"error": "No stop at index"}), 400
     return jsonify({"error": "Invalid login"}), 401
 
-@app.route('/api/profile/stops', methods=['POST'])
+@api_bp.route('/profile/stops', methods=['POST'])
 def api_profile_stops_post():
     uid = validate_jwt()
     if uid:
@@ -170,7 +179,7 @@ def api_profile_stops_post():
         return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
     return jsonify({"error": "Invalid login"}), 401
 
-@app.route('/api/profile/stops/<fav_idx>', methods=['PUT', 'DELETE'])
+@api_bp.route('/api/profile/stops/<fav_idx>', methods=['PUT', 'DELETE'])
 def api_profile_stops_put_del(fav_idx):
     uid = validate_jwt()
     if uid:
