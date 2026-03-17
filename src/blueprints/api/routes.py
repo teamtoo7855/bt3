@@ -9,6 +9,7 @@ from firebase import db
 import re
 import json
 from config import Config
+from utils.data import STOPCODE_TO_STOPID, SHORT_TO_ROUTEID
 
 GTFS_TRIP_URL = Config.GTFS_TRIP_URL
 
