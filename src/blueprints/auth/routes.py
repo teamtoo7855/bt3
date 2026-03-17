@@ -78,7 +78,8 @@ def signup():
 # AUTH: LOGIN
 # -----------------------------
 @auth_bp.route('/login', methods=['GET', 'POST'])
-def login():
+@require_jwt
+def login(uid : str):
     error = None
     if request.method == "POST":
         email = (request.form.get('email') or "").strip()
@@ -94,10 +95,8 @@ def login():
         if res.status_code == 200:
             session["demo"] = False  # exit demo if previously on
             session['token'] = res.json()["idToken"]
-            uid = validate_jwt()
-            if uid:
-                curr_email = db.collection('profile').document(uid).get().to_dict().get('email', email)
-                flash(f"Logged in as {curr_email}", category="Success")
+            curr_email = db.collection('profile').document(uid).get().to_dict().get('email', email)
+            flash(f"Logged in as {curr_email}", category="Success")
             return redirect(url_for('profile'))
         else:
             flash("Bad email or password.", category="Error")

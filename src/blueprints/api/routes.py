@@ -139,7 +139,7 @@ def get_shape():
 
 @api_bp.route('/profile/stops', methods=['GET'])
 @require_jwt
-def api_profile_stops_get_all():
+def api_profile_stops_get_all(uid: str):
     stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
     return jsonify(stops)
     #uid = validate_jwt()
@@ -150,7 +150,7 @@ def api_profile_stops_get_all():
 
 @api_bp.route('/profile/stops/<fav_idx>', methods=['GET'])
 @require_jwt
-def api_profile_stops_get_one(fav_idx):
+def api_profile_stops_get_one(fav_idx, uid: str):
     stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
     try:
         stop_n = stops[int(fav_idx)]
@@ -169,7 +169,7 @@ def api_profile_stops_get_one(fav_idx):
 
 @api_bp.route('/profile/stops', methods=['POST'])
 @require_jwt
-def api_profile_stops_post():
+def api_profile_stops_post(uid: str):
     stop_number = request.form['stop_number']
     if not stop_number:
         return jsonify({"error": "Invalid stop number"}), 400
@@ -215,7 +215,7 @@ def api_profile_stops_post():
 
 @api_bp.route('/api/profile/stops/<fav_idx>', methods=['PUT', 'DELETE'])
 @require_jwt
-def api_profile_stops_put_del(fav_idx):
+def api_profile_stops_put_del(fav_idx, uid : str):
     doc_ref = db.collection('profile').document(uid)
     doc = doc_ref.get()
     data = doc.to_dict()
