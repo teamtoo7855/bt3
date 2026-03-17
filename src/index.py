@@ -479,7 +479,7 @@ def vehicles_geojson():
         "features": features
     })
 
-
+'''
 @app.route('/api/profile/stops', methods=['GET'])
 def api_profile_stops_get_all():
     uid = validate_jwt()
@@ -548,7 +548,7 @@ def api_profile_stops_put_del(fav_idx):
             except:
                 return jsonify({"error": "No stop at index"}), 400
     return jsonify({"error": "Invalid login"}), 401
-
+'''
 # @app.route('/signup', methods=['GET', 'POST'])
 # def signup():
 #     error = None
