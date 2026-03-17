@@ -91,6 +91,8 @@ def check_id(bus_id : int):
                     break
         return bus_name
 
+
+'''
 def validate_email(email: str):
     if re.match(r"[^@]+@[^@]+\.[^@]+", email):
         return True
@@ -108,7 +110,8 @@ def validate_jwt():
         return decoded_token["uid"]
     except:
         return None
-
+'''
+#don't know if this is important
 def is_demo():
     return True if session.get("demo") else False
 
@@ -642,6 +645,7 @@ def api_profile_stops_put_del(fav_idx):
 #     return redirect(url_for('login'))
 
 #profile validation helper
+'''
 def validate_profile_data(username, password, email, favorite_bus_type,
                           favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
     if not username or not password:
@@ -668,7 +672,7 @@ def normalize_profile_data(username, password, email, favorite_bus_type,
         },
         "created": created.strip() #date created if wanted to use
     }
-
+'''
 @app.route("/stops.geojson")
 def stops_geojson():
     with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
