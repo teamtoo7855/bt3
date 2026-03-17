@@ -19,7 +19,7 @@ def validate_jwt():
         return decoded_token["uid"]
     except:
         return None
-'''
+    '''
 def validate_profile_data(username, password, email, favorite_bus_type,
                           favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
     if not username or not password:
