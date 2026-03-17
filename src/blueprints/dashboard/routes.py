@@ -30,11 +30,11 @@ def demo():
     session.pop("token", None)
     session["demo"] = True
     flash("Demo mode enabled (guest).", category="Success")
-    return redirect(url_for("home"))
+    return redirect(url_for("dashboard.home"))
 
 @dashboard_bp.route("/")
 #get html page defined as index.html, also include mapbox token
 def home():
     if not require_login_or_demo():
-        return redirect(url_for("login"))
+        return redirect(url_for("auth.login"))
     return render_template("index.html", key=Config.MAPBOX_ACCESS_TOKEN)

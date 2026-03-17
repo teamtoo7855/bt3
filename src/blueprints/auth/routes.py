@@ -70,7 +70,7 @@ def signup():
         doc_ref.set(user_data)
 
         flash("Signed up successfully. Please log in.", category="Success")
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
 
     return render_template('signup.html', error=error)
 
@@ -97,7 +97,7 @@ def login(uid : str):
             session['token'] = res.json()["idToken"]
             curr_email = db.collection('profile').document(uid).get().to_dict().get('email', email)
             flash(f"Logged in as {curr_email}", category="Success")
-            return redirect(url_for('profile'))
+            return redirect(url_for('auth.profile'))
         else:
             flash("Bad email or password.", category="Error")
 
@@ -108,5 +108,5 @@ def logout():
     session.pop('token', None)
     session.pop('demo', None)
     flash("Logged out", category="Success")
-    return redirect(url_for('login'))
+    return redirect(url_for('auth.login'))
 
