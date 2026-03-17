@@ -124,14 +124,14 @@ def require_login_or_demo():
     if is_demo():
         return "demo"
     return None
-
+'''
 @app.route("/")
 #get html page defined as index.html, also include mapbox token
 def home():
     if not require_login_or_demo():
         return redirect(url_for("login"))
     return render_template("index.html", key=keys.mapbox_access_token)
-
+'''
 # -----------------------------
 # DEMO MODE
 # -----------------------------
@@ -142,7 +142,7 @@ def demo():
     session["demo"] = True
     flash("Demo mode enabled (guest).", category="Success")
     return redirect(url_for("home"))
-
+'''
 # -----------------------------
 # AUTH: SIGNUP
 # -----------------------------
@@ -311,7 +311,8 @@ def profile():
         user_data = doc_ref.get().to_dict()
 
     return render_template('profile.html', user_data=user_data)
-
+'''
+'''
 @app.get("/api/next_arrival")
 def next_arrival():
     stop_code = request.args.get("stop_id", "").strip()
@@ -430,7 +431,7 @@ def get_shape():
                             }],
                         }
                     )
-
+'''
 @app.route("/vehicles.geojson")
 def vehicles_geojson():
     #load the GTFS key info for vehicle positions
