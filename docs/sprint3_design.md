@@ -14,5 +14,5 @@ Our app will mainly use CSR:
 SSR is mainly for base templates.
 
 ## Security measure: 
-So far only input validation is being implemented for security checks. This would be for things such as preventing malformed data and injection and password hashing. JWT verification for api is also used for protection
+So far only input validation is being implemented for security checks. This would be for things such as preventing malformed data and injection and password hashing. JWT verification for api is also used for protection.
 
