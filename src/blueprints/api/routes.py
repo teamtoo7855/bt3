@@ -13,14 +13,14 @@ from utils.data import STOPCODE_TO_STOPID, SHORT_TO_ROUTEID
 from decorators.auth import require_jwt
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-#from app import app
-#limiter = Limiter(get_remote_address, app=app)
+from flask import current_app as app
+limiter = Limiter(get_remote_address, app=app)
 
 
 GTFS_TRIP_URL = Config.GTFS_TRIP_URL
 
 @api_bp.get("/next_arrival")
-#@limiter.limit("10 per minute")
+@limiter.limit("10 per minute")
 def next_arrival():
     stop_code = request.args.get("stop_id", "").strip()
     bus_number = request.args.get("bus_number", "").strip()
@@ -97,7 +97,7 @@ def next_arrival():
     })
 
 @api_bp.get("/shape")
-#@limiter.limit("10 per minute")
+@limiter.limit("10 per minute")
 def get_shape():
     stop_id = request.args.get("stop_id", "").strip()
     trip_id = request.args.get("trip_id", "").strip()
