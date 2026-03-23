@@ -246,10 +246,10 @@ map.on("load", () => {
     }
   });
 
-  // Auto-refresh buses every .1 seconds
+  // Auto-refresh buses every .5 seconds
   setInterval(() => {
     map.getSource("buses").setData("/vehicles.geojson");
-  }, 1000);
+  }, 5000);
 
   // -----------------------------
   // Enable 3D Buildings
