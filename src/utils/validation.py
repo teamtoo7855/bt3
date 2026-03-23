@@ -32,12 +32,15 @@ def validate_profile_data(username, password, email, favorite_bus_type,
 def validate_favorite_stops(favorite_stop_id : list):
     with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
         stops = []
+        invalid_stops = []
         for row in csv.DictReader(f):
             stops.append(row.get("stop_id"))
         for stop in favorite_stop_id:
             if stop not in stops:
-                return f"the stop id {stop} does not exist"
-        return None
+                invalid_stops.append(stop)
+        if len(invalid_stops) > 0:
+            return invalid_stops
+        return True
 
 #profile data normalization
 def normalize_profile_data(username, password, email, favorite_bus_type,

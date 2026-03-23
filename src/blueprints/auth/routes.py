@@ -6,7 +6,7 @@ from . import auth_bp
 import requests
 import time
 from config import Config
-from utils.validation import validate_email, validate_password
+from utils.validation import validate_email, validate_password, validate_favorite_stops
 from decorators.auth import require_jwt
 FIREBASE_LOGIN = Config.FIREBASE_LOGIN
 # -----------------------------
@@ -38,7 +38,10 @@ def signup():
         theme = (request.form.get("theme") or "").strip()
         alerts = (request.form.get("alerts") or "").strip()  # "on"/"off"/""
         favorite_stop = (request.form.get("favorite_stop") or "").strip()
-
+        favorite_stops = [stop.strip() for stop in favorite_stop.split(",") if stop.strip()]
+        if not validate_favorite_stops(favorite_stops):
+            flash(f"the following stops are invalid {validate_favorite_stops(favorite_stops)}", category="Error")
+            return render_template('signup.html', error=error)
         # create auth account
         try:
             user = auth.create_user(email=email, password=password)
@@ -59,7 +62,7 @@ def signup():
             "prefs": {
                 "favorite_bus_types": [favorite_type] if favorite_type else [],
                 "favorite_routes": [favorite_route] if favorite_route else [],
-                "favorite_stops": [favorite_stop] if favorite_stop else [],
+                "favorite_stops": favorite_stops,
                 "theme": theme,
                 "alerts": alerts_value
             }
