@@ -38,10 +38,16 @@ def signup():
         theme = (request.form.get("theme") or "").strip()
         alerts = (request.form.get("alerts") or "").strip()  # "on"/"off"/""
         favorite_stop = (request.form.get("favorite_stop") or "").strip()
+        if not validate_favorite_stops(favorite_stop):
+            flash(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", category="Error")
+            return render_template('signup.html', error=error)
+        '''
+        for multi down the line
         favorite_stops = [stop.strip() for stop in favorite_stop.split(",") if stop.strip()]
         if not validate_favorite_stops(favorite_stops):
             flash(f"the following stops are invalid {validate_favorite_stops(favorite_stops)}", category="Error")
             return render_template('signup.html', error=error)
+            '''
         # create auth account
         try:
             user = auth.create_user(email=email, password=password)
@@ -62,7 +68,7 @@ def signup():
             "prefs": {
                 "favorite_bus_types": [favorite_type] if favorite_type else [],
                 "favorite_routes": [favorite_route] if favorite_route else [],
-                "favorite_stops": favorite_stops,
+                "favorite_stops": [favorite_stop] if favorite_route else [],
                 "theme": theme,
                 "alerts": alerts_value
             }
@@ -81,8 +87,8 @@ def signup():
 # AUTH: LOGIN
 # -----------------------------
 @auth_bp.route('/login', methods=['GET', 'POST'])
-@require_jwt
-def login(uid : str):
+#@require_jwt
+def login():
     error = None
     if request.method == "POST":
         email = (request.form.get('email') or "").strip()
@@ -95,6 +101,7 @@ def login(uid : str):
         payload = {"email": email, "password": password, "returnSecureToken": True}
         res = requests.post(FIREBASE_LOGIN, json=payload)
 
+        '''
         if res.status_code == 200:
             session["demo"] = False  # exit demo if previously on
             session['token'] = res.json()["idToken"]
@@ -103,6 +110,7 @@ def login(uid : str):
             return redirect(url_for('auth.profile'))
         else:
             flash("Bad email or password.", category="Error")
+            '''
 
     return render_template('login.html', error=error)
 

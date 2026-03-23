@@ -29,18 +29,26 @@ def validate_profile_data(username, password, email, favorite_bus_type,
         return "username must be a string."
     return None
 
-def validate_favorite_stops(favorite_stop_id : list):
+def validate_favorite_stops(favorite_stop_id):
     with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
         stops = []
-        invalid_stops = []
+
         for row in csv.DictReader(f):
-            stops.append(row.get("stop_id"))
-        for stop in favorite_stop_id:
-            if stop not in stops:
-                invalid_stops.append(stop)
-        if len(invalid_stops) > 0:
-            return invalid_stops
+            stops.append(row.get("stop_code"))
+        print (favorite_stop_id)
+        print (stops)
+        if favorite_stop_id not in stops:
+            return False
         return True
+    ''' 
+    invalid_stops = []
+    for multi down the line
+    for stop in favorite_stop_id:
+        if stop not in stops:
+            invalid_stops.append(stop)
+    if len(invalid_stops) > 0:
+        return invalid_stops
+        '''
 
 #profile data normalization
 def normalize_profile_data(username, password, email, favorite_bus_type,
