@@ -313,6 +313,51 @@ map.on("load", () => {
 const locBtn = document.getElementById("locBtn");
 const locStatus = document.getElementById("locStatus");
 
+let busChart = null;
+
+async function updateBusChart() {
+  try {
+    const res = await fetch("/vehicles.geojson");
+    const data = await res.json();
+
+    const counts = {};
+
+    for (const feature of data.features || []) {
+      const model = feature.properties.vehicle_name || "Unknown";
+      counts[model] = (counts[model] || 0) + 1;
+    }
+
+    const labels = Object.keys(counts);
+    const values = Object.values(counts);
+
+    const ctx = document.getElementById("busChart").getContext("2d");
+
+    if (busChart) {
+      busChart.destroy();
+    }
+
+    busChart = new Chart(ctx, {
+      type: "pie",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+          position: "bottom"
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 async function sendUserLocation(lat, lon) {
   const res = await fetch("/api/location/user", {
     method: "POST",
