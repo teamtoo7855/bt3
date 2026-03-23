@@ -155,6 +155,9 @@ map.on("load", () => {
       //turn cursor into pointer variant
       map.getCanvas().style.cursor = 'pointer';
       clearTimeout(hoverTimeout);
+      hoveredRoute = {
+        route_id: e.feature.properties.route_id
+      };
       //within a timeout process (for request limiting)
       hoverTimeout = setTimeout(() =>{
         //currently obsolete
@@ -201,9 +204,12 @@ map.on("load", () => {
       target: { layerId: 'bus-points' },
       handler: () => {
           map.getCanvas().style.cursor = '';
+          hoveredRoute= null;
           // popup.remove();
-          map.removeLayer('hover-layer')
-          map.removeSource('hover-route')
+          if (map.getLayer('hover-layer')) map.removeLayer('hover-layer');
+          if (map.getSource('hover-route')) map.removeSource('hover-route');
+
+          updateBusChart();
       }
   });
 
@@ -274,7 +280,9 @@ map.on("load", () => {
   // Auto-refresh buses every .5 seconds
   setInterval(() => {
     map.getSource("buses").setData("/vehicles.geojson");
-    map.once("idle", updateBusChart);
+    if (hoveredRoute) {
+      map.once("idle", updateBusChart);
+    }
   }, 5000);
 
   // -----------------------------
@@ -314,8 +322,8 @@ map.on("load", () => {
 
 const locBtn = document.getElementById("locBtn");
 const locStatus = document.getElementById("locStatus");
-
 let busChart = null;
+let hoveredRoute = null;
 
 async function updateBusChart() {
   try {
