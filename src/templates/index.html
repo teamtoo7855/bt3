@@ -164,7 +164,7 @@ map.on("load", () => {
         const description = e.feature.properties.vehicle_name;
         // popup.setLngLat(coordinates).setHTML(description).addTo(map);
         // get link to be requested for bus routes
-        const url = `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction}`;
+        const url = `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction_id}`;
         //if hover route has already been created
         if (map.getSource("hover-route")){
         //grab info from the url
