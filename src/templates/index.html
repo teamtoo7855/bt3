@@ -325,40 +325,67 @@ const locStatus = document.getElementById("locStatus");
 let busChart = null;
 let hoveredRoute = null;
 
-async function updateBusChart() {
+function updateBusChart() {
   try {
-    const res = await fetch("/vehicles.geojson");
-    const data = await res.json();
+    const canvas = document.getElementById("busChart");
+    const panel = document.getElementById("chartPanel");
 
+    if (!canvas || !panel) return;
+
+    const ctx = canvas.getContext("2d");
+
+    // Only show chart while a hover route is active
+    if (!hoveredRoute || !map.getSource("hover-route")) {
+      panel.style.display = "none";
+
+      if (busChart) {
+        busChart.destroy();
+        busChart = null;
+      }
+      return;
+    }
+
+    // Use currently rendered buses, then keep only same route_id
+    const rendered = map.queryRenderedFeatures({ layers: ["bus-points"] });
     const counts = {};
 
-    for (const feature of data.features || []) {
-      const model = feature.properties.vehicle_name || "Unknown";
-      counts[model] = (counts[model] || 0) + 1;
+    for (const feature of rendered) {
+      const props = feature.properties || {};
+      if (String(props.route_id) !== String(hoveredRoute.route_id)) continue;
+
+      const name = props.vehicle_name || "Unknown";
+      counts[name] = (counts[name] || 0) + 1;
     }
 
     const labels = Object.keys(counts);
     const values = Object.values(counts);
 
-    const ctx = document.getElementById("busChart").getContext("2d");
-
     if (busChart) {
       busChart.destroy();
+      busChart = null;
     }
+
+    if (!labels.length) {
+      panel.style.display = "none";
+      return;
+    }
+
+    panel.style.display = "block";
 
     busChart = new Chart(ctx, {
       type: "pie",
       data: {
-        labels: labels,
+        labels,
         datasets: [{
           data: values
         }]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
-          position: "bottom"
+            position: "bottom"
           }
         }
       }
@@ -367,7 +394,6 @@ async function updateBusChart() {
     console.log(e);
   }
 }
-
 async function sendUserLocation(lat, lon) {
   const res = await fetch("/api/location/user", {
     method: "POST",
