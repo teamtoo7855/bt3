@@ -8,6 +8,8 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" rel="stylesheet" />
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     body { margin: 0; }
     #map { width: 100vw; height: 100vh; }
@@ -50,6 +52,11 @@
 
 <div id="map"></div>
 <div class="map-overlay" id="properties"></div>
+
+<div id="chartPanel" style="display:none;position:absolute;z-index:3;right:12px;bottom:24px;width:340px;height:400px;background:white;padding:16px;border-radius:10px;font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
+  <div style="font-weight:600;margin-bottom:0px;">Buses on Route</div>
+  <canvas id="busChart"></canvas>
+</div>
 
 <script>
   //generated webpage above
@@ -148,13 +155,16 @@ map.on("load", () => {
       //turn cursor into pointer variant
       map.getCanvas().style.cursor = 'pointer';
       clearTimeout(hoverTimeout);
+      hoveredRoute = {
+        route_id: e.feature.properties.route_id
+      };
       //within a timeout process (for request limiting)
       hoverTimeout = setTimeout(() =>{
         //currently obsolete
         const description = e.feature.properties.vehicle_name;
         // popup.setLngLat(coordinates).setHTML(description).addTo(map);
         // get link to be requested for bus routes
-        const url = `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction}`;
+        const url = `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction_id}`;
         //if hover route has already been created
         if (map.getSource("hover-route")){
         //grab info from the url
@@ -194,9 +204,12 @@ map.on("load", () => {
       target: { layerId: 'bus-points' },
       handler: () => {
           map.getCanvas().style.cursor = '';
+          hoveredRoute= null;
           // popup.remove();
-          map.removeLayer('hover-layer')
-          map.removeSource('hover-route')
+          if (map.getLayer('hover-layer')) map.removeLayer('hover-layer');
+          if (map.getSource('hover-route')) map.removeSource('hover-route');
+
+          updateBusChart();
       }
   });
 
@@ -267,6 +280,9 @@ map.on("load", () => {
   // Auto-refresh buses every .5 seconds
   setInterval(() => {
     map.getSource("buses").setData("/vehicles.geojson");
+    if (hoveredRoute) {
+      map.once("idle", updateBusChart);
+    }
   }, 5000);
 
   // -----------------------------
@@ -301,11 +317,83 @@ map.on("load", () => {
     labelLayerId
   );
 
+  updateBusChart();
 });
 
 const locBtn = document.getElementById("locBtn");
 const locStatus = document.getElementById("locStatus");
+let busChart = null;
+let hoveredRoute = null;
 
+function updateBusChart() {
+  try {
+    const canvas = document.getElementById("busChart");
+    const panel = document.getElementById("chartPanel");
+
+    if (!canvas || !panel) return;
+
+    const ctx = canvas.getContext("2d");
+
+    // Only show chart while a hover route is active
+    if (!hoveredRoute || !map.getSource("hover-route")) {
+      panel.style.display = "none";
+
+      if (busChart) {
+        busChart.destroy();
+        busChart = null;
+      }
+      return;
+    }
+
+    // Use currently rendered buses, then keep only same route_id
+    const rendered = map.queryRenderedFeatures({ layers: ["bus-points"] });
+    const counts = {};
+
+    for (const feature of rendered) {
+      const props = feature.properties || {};
+      if (String(props.route_id) !== String(hoveredRoute.route_id)) continue;
+
+      const name = props.vehicle_name || "Unknown";
+      counts[name] = (counts[name] || 0) + 1;
+    }
+
+    const labels = Object.keys(counts);
+    const values = Object.values(counts);
+
+    if (busChart) {
+      busChart.destroy();
+      busChart = null;
+    }
+
+    if (!labels.length) {
+      panel.style.display = "none";
+      return;
+    }
+
+    panel.style.display = "block";
+
+    busChart = new Chart(ctx, {
+      type: "pie",
+      data: {
+        labels,
+        datasets: [{
+          data: values
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom"
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
 async function sendUserLocation(lat, lon) {
   const res = await fetch("/api/location/user", {
     method: "POST",
