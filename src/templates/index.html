@@ -138,36 +138,54 @@ map.on("load", () => {
     closeButton: false,
     closeOnClick: false
   });
-
+  //create a timeout
+  let hoverTimeout
   map.addInteraction('places-mouseenter-interaction', {
     type: 'mouseenter',
+    // if bus points on map are selected
     target: { layerId: 'bus-points' },
     handler: (e) => {
+      //turn cursor into pointer variant
       map.getCanvas().style.cursor = 'pointer';
-      const coordinates = e.feature.geometry.coordinates.slice();
-      const description = e.feature.properties.vehicle_name;
-      // popup.setLngLat(coordinates).setHTML(description).addTo(map);
-
-      map.addSource("hover-route", {
-        type: "geojson",
-        data: `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction}`
-      });
-
-
-      map.addLayer({
-        id: "hover-layer",
-        type: "line",
-        source: "hover-route",
-        layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-        },
-        paint: {
-            'line-color': '#888',
-            'line-width': 8
+      clearTimeout(hoverTimeout);
+      //within a timeout process (for request limiting)
+      hoverTimeout = setTimeout(() =>{
+        //currently obsolete
+        const description = e.feature.properties.vehicle_name;
+        // popup.setLngLat(coordinates).setHTML(description).addTo(map);
+        // get link to be requested for bus routes
+        const url = `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction}`;
+        //if hover route has already been created
+        if (map.getSource("hover-route")){
+        //grab info from the url
+          map.getSource("hover-route").setData(url);
         }
-      });
+        //otherwise add hover route of geojson type with the previous included url
+        else {
+          map.addSource("hover-route", {
+          type: "geojson",
+          data: url
+          });
+
+          //add line layers with specified colours
+          map.addLayer({
+            id: "hover-layer",
+            type: "line",
+            source: "hover-route",
+            layout: {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            paint: {
+                'line-color': '#888',
+                'line-width': 8
+            }
+          });
+        }
+        //add a time delay before routes are registeredd
+      }, 100);
     }
+
   });
 
   // clear popup when mouse no longer hovering
@@ -246,10 +264,10 @@ map.on("load", () => {
     }
   });
 
-  // Auto-refresh buses every .1 seconds
+  // Auto-refresh buses every .5 seconds
   setInterval(() => {
     map.getSource("buses").setData("/vehicles.geojson");
-  }, 1000);
+  }, 5000);
 
   // -----------------------------
   // Enable 3D Buildings

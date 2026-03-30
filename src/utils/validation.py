@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
 import re
+import csv
 
 def validate_email(email: str):
     if re.match(r"[^@]+@[^@]+\.[^@]+", email):
@@ -7,7 +8,7 @@ def validate_email(email: str):
     return False
 
 def validate_password(password: str):
-    if (len(password) < 6):
+    if (len(password) < 8):
         return False
     return True
 #idk if this is important
@@ -27,6 +28,27 @@ def validate_profile_data(username, password, email, favorite_bus_type,
     if not type(username) is str and type(password) is str:
         return "username must be a string."
     return None
+
+def validate_favorite_stops(favorite_stop_id):
+    with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
+        stops = []
+
+        for row in csv.DictReader(f):
+            stops.append(row.get("stop_code"))
+        print (favorite_stop_id)
+        print (stops)
+        if favorite_stop_id not in stops:
+            return False
+        return True
+    ''' 
+    invalid_stops = []
+    for multi down the line
+    for stop in favorite_stop_id:
+        if stop not in stops:
+            invalid_stops.append(stop)
+    if len(invalid_stops) > 0:
+        return invalid_stops
+        '''
 
 #profile data normalization
 def normalize_profile_data(username, password, email, favorite_bus_type,
