@@ -25,7 +25,7 @@ def signup():
         password_confirm = request.form.get('password_confirm') or ""
 
         if not validate_password(password):
-            flash("Password needs to be at least 6 characters long.", category="Error")
+            flash("Password needs to be at least 8 characters long.", category="Error")
             return render_template('signup.html', error=error)
 
         if password != password_confirm:
