@@ -100,7 +100,7 @@ def login():
 
         payload = {"email": email, "password": password, "returnSecureToken": True}
         res = requests.post(FIREBASE_LOGIN, json=payload)
-
+        return redirect(url_for('dashboard.home'))
         '''
         if res.status_code == 200:
             session["demo"] = False  # exit demo if previously on
@@ -121,3 +121,14 @@ def logout():
     flash("Logged out", category="Success")
     return redirect(url_for('auth.login'))
 
+
+@auth_bp.route("/error")
+def error():
+    status_code = request.args.get("status_code", 500)
+    error_message = request.args.get("error_message", "Please try again.")
+
+    return render_template(
+        "error.html",
+        status_code=status_code,
+        error_message=error_message
+    ), int(status_code)
