@@ -114,6 +114,7 @@ def test_validate_email(email, expected):
     result = validate_email(email)
 
     assert result == expected
+```
 
 **Explanation:**
 
