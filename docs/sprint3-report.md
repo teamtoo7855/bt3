@@ -22,6 +22,8 @@
 - Implement rate limits on API: Limit maximum API requests to avoid overwhelming system/sending excess requests to Mapbox
 - Implement input validation: Email field only accepts input that looks like user@example.tld, Password must be at least eight characters long, Don't allow invalid stop numbers to be added to a profile's favourite stop list
 - Display information from Chart.js: Display pie chart with current bus types on a certain route
+- Create structured testing suite: Built a pytest test suite in src/tests with organized files for authentication, API validation, auth route behavior, and reusable validation logic.
+- Generate automated tests: Added automated tests for protected API behavior, bad request validation, auth page flows, stop list CRUD behavior, and validation helpers, and ran them locally with coverage reporting.
 
 
 **Not Completed / Partially Completed:**
@@ -45,10 +47,86 @@ Blueprints improve organization/maintainability and scalability, utils centraliz
 - **Client-Side (JS):** JS handles fetching and generating mapbox data, generating customized .html screens, and (updating Chart.js?) [What does JS handle? e.g., Fetching sensor data, updating Chart.js]
 
 ## 4. Automated Testing & Coverage
-- **Testing Framework:** `pytest`
-- **Current Code Coverage:** [%]
-- **Mocked Components:** [List what was mocked, e.g., `verify_id_token`, Firestore]
 
-**Test Highlight:**
+- **Testing Framework:** `pytest`  
+- **Current Code Coverage:** `71%`  
+- **Mocked Components:** `firebase_admin.auth.verify_id_token`, Firestore (`db.collection`, `document`, `get`, `set`, `update` via in-memory mocks)
+
+### Automated Testing & Coverage
+
+We implemented a structured `pytest` test suite inside `src/tests` to verify authentication, API validation, and core route behavior. The test suite currently executes 41 tests in under a second, demonstrating that it is fast, automated, and suitable for continuous development.
+
+A key goal of this sprint was to transition from manual testing (e.g., Postman) to automated testing. Our tests now cover:
+- Protected API routes requiring authentication
+- Invalid request handling (400 responses)
+- Authentication flows (login, signup, token validation)
+- Profile stop management endpoints (add, update, delete)
+- Reusable validation utilities (email, password, input formats)
+
+This ensures consistent behavior across both valid and invalid inputs.
+
+### Mocking Strategy
+
+To prevent reliance on external services, we mocked both Firebase authentication and Firestore:
+
+- **Firebase Auth Mocking:**  
+  We used `unittest.mock.patch` to mock `firebase_admin.auth.verify_id_token`. This allows us to simulate valid and invalid JWT tokens without making real network requests.
+
+- **Firestore Mocking:**  
+  We created fake Firestore classes in `conftest.py` that simulate:
+  - `db.collection(...)`
+  - `document(...)`
+  - `get()`, `set()`, `update()`
+
+  These mocks use in-memory Python dictionaries to mimic database behavior, ensuring that tests:
+  - run without internet access  
+  - do not modify real database data  
+  - execute quickly and consistently  
+
+### Coverage Analysis
+
+We used `pytest --cov=src --cov-report=term-missing` to evaluate test coverage. Our current coverage is **71%**, with strong coverage in:
+- Authentication decorators and token validation
+- Auth route flows (login, signup, error handling)
+- API validation logic (400 and 401 responses)
+- Core backend logic for user profile operations
+
+The coverage report highlights untested lines, allowing us to focus on meaningful logic such as edge cases and error handling instead of artificially increasing test count.
+
+### Test Highlight (AAA + Parametrization)
+
 ```python
-# Paste ONE test here that demonstrates the AAA pattern and Mocking/Parametrization
+import pytest
+from utils.validation import validate_email
+
+
+@pytest.mark.parametrize(
+    "email, expected",
+    [
+        ("test@example.com", True),
+        ("student@bcit.ca", True),
+        ("bademail", False),
+        ("missingatsign.com", False),
+        ("", False),
+    ],
+)
+def test_validate_email(email, expected):
+    result = validate_email(email)
+
+    assert result == expected
+
+**Explanation:**
+
+**AAA Pattern:**
+- **Arrange:** Define inputs and expected outputs using `@pytest.mark.parametrize`
+- **Act:** Call `validate_email(email)`
+- **Assert:** Verify the result matches the expected output
+
+**Equivalence Partitioning:**
+Instead of testing all possible inputs, we test representative groups:
+- Valid emails  
+- Invalid formats  
+- Missing components  
+- Empty input  
+
+This ensures efficient and meaningful test coverage.
