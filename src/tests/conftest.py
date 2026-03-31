@@ -1,9 +1,5 @@
-import os
-import sys
-import types
 import pytest
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from app import app as flask_app
 
 
 class FakeDocSnapshot:
@@ -26,116 +22,51 @@ class FakeDocumentRef:
     def get(self):
         return FakeDocSnapshot(self.store.get(self.key))
 
-    def create(self, data):
+    def set(self, data):
         self.store[self.key] = data
-
-    def update(self, data):
-        if self.key not in self.store:
-            self.store[self.key] = {}
-        self.store[self.key].update(data)
-
-    def set(self, data, merge=False):
-        if merge and self.key in self.store:
-            self.store[self.key].update(data)
-        else:
-            self.store[self.key] = data
 
 
 class FakeCollection:
-    def __init__(self, store):
-        self.store = store
+    def __init__(self, root_store, name):
+        self.root_store = root_store
+        self.name = name
+        if name not in self.root_store:
+            self.root_store[name] = {}
 
     def document(self, key):
-        return FakeDocumentRef(self.store, key)
+        return FakeDocumentRef(self.root_store[self.name], key)
 
 
-class FakeFirestoreClient:
+class FakeDB:
     def __init__(self):
-        self.collections = {"profile": {}}
+        self.store = {}
 
     def collection(self, name):
-        if name not in self.collections:
-            self.collections[name] = {}
-        return FakeCollection(self.collections[name])
+        return FakeCollection(self.store, name)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def fake_external_modules():
-    fake_keys = types.ModuleType("keys")
-    fake_keys.translink_api_key = "fake-translink-key"
-    fake_keys.firebase_apikey = "fake-firebase-key"
-    fake_keys.mapbox_access_token = "fake-mapbox-key"
+@pytest.fixture
+def fake_db():
+    db = FakeDB()
 
-    sys.modules["keys"] = fake_keys
-    sys.modules["src.keys"] = fake_keys
+    db.collection("profile").document("test_user").set({
+        "prefs": {
+            "favorite_stops": ["12345", "67890"]
+        }
+    })
 
-    fake_gtfs_module = types.ModuleType("gtfs_realtime_pb2")
-
-    class FakeFeedMessage:
-        def ParseFromString(self, content):
-            return None
-
-    fake_gtfs_module.FeedMessage = FakeFeedMessage
-
-    fake_google = types.ModuleType("google")
-    fake_transit = types.ModuleType("google.transit")
-    fake_transit.gtfs_realtime_pb2 = fake_gtfs_module
-    fake_google.transit = fake_transit
-
-    sys.modules["google"] = fake_google
-    sys.modules["google.transit"] = fake_transit
-    sys.modules["google.transit.gtfs_realtime_pb2"] = fake_gtfs_module
-
-    fake_firebase_admin = types.ModuleType("firebase_admin")
-    fake_firebase_admin._apps = []
-
-    def initialize_app(cred):
-        fake_firebase_admin._apps.append("initialized")
-        return "fake-app"
-
-    fake_firebase_admin.initialize_app = initialize_app
-
-    fake_credentials = types.ModuleType("credentials")
-    fake_credentials.Certificate = lambda path: {"path": path}
-
-    fake_db = FakeFirestoreClient()
-
-    fake_firestore = types.ModuleType("firestore")
-    fake_firestore.client = lambda: fake_db
-
-    fake_auth = types.ModuleType("auth")
-
-    def verify_id_token(token):
-        if token == "good-token":
-            return {"uid": "test-uid"}
-        raise Exception("invalid token")
-
-    def create_user(email, password):
-        return types.SimpleNamespace(uid="new-user", email=email)
-
-    fake_auth.verify_id_token = verify_id_token
-    fake_auth.create_user = create_user
-
-    fake_firebase_admin.credentials = fake_credentials
-    fake_firebase_admin.firestore = fake_firestore
-    fake_firebase_admin.auth = fake_auth
-
-    sys.modules["firebase_admin"] = fake_firebase_admin
-    sys.modules["firebase_admin.credentials"] = fake_credentials
-    sys.modules["firebase_admin.firestore"] = fake_firestore
-    sys.modules["firebase_admin.auth"] = fake_auth
+    return db
 
 
-@pytest.fixture()
-def app():
-    from app import app as flask_app
-    flask_app.config.update(
-        TESTING=True,
-        SECRET_KEY="test-secret",
-    )
-    yield flask_app
+@pytest.fixture
+def client(fake_db, monkeypatch):
+    flask_app.config["TESTING"] = True
 
+    import firebase
+    monkeypatch.setattr(firebase, "db", fake_db)
 
-@pytest.fixture()
-def client(app):
-    return app.test_client()
+    import blueprints.api.routes as api_routes
+    monkeypatch.setattr(api_routes, "db", fake_db)
+
+    with flask_app.test_client() as test_client:
+        yield test_client
