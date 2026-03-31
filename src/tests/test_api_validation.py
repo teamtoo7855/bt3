@@ -1,22 +1,22 @@
+import pytest
 from unittest.mock import patch
 
 
-def test_login_bad_email_returns_400(client):
+@pytest.mark.parametrize(
+    "email,password,expected_error",
+    [
+        ("not-an-email", "secret123", "Invalid email"),
+        ("user@example.com", "123", "Invalid password"),
+    ],
+)
+def test_login_invalid_input_partitions(client, email, password, expected_error):
     response = client.post(
         "/api/login",
-        json={"email": "not-an-email", "password": "secret123"}
+        json={"email": email, "password": password}
     )
-    assert response.status_code == 400
-    assert "error" in response.get_json()
 
-
-def test_login_bad_password_returns_400(client):
-    response = client.post(
-        "/api/login",
-        json={"email": "user@example.com", "password": "123"}
-    )
     assert response.status_code == 400
-    assert "error" in response.get_json()
+    assert response.get_json()["error"] == expected_error
 
 
 def test_signup_passwords_do_not_match_returns_400(client):
@@ -33,6 +33,7 @@ def test_signup_passwords_do_not_match_returns_400(client):
             "favorite_stop": ""
         }
     )
+
     assert response.status_code == 400
     assert response.get_json()["error"] == "Passwords do not match"
 
@@ -51,8 +52,9 @@ def test_signup_bad_email_returns_400(client):
             "favorite_stop": ""
         }
     )
+
     assert response.status_code == 400
-    assert "error" in response.get_json()
+    assert response.get_json()["error"] == "Invalid email"
 
 
 @patch("blueprints.api.routes.validate_favorite_stops", return_value=False)
@@ -70,6 +72,7 @@ def test_signup_bad_favorite_stop_returns_400(mock_validate_stop, client):
             "favorite_stop": "99999"
         }
     )
+
     assert response.status_code == 400
     assert response.get_json()["error"] == "Invalid favorite stop"
 
@@ -79,6 +82,7 @@ def test_profile_update_without_token_returns_401(client):
         "/api/profile",
         json={"favorite_route": "106"}
     )
+
     assert response.status_code == 401
 
 
@@ -122,5 +126,6 @@ def test_add_profile_stop_bad_payload_returns_400(mock_validate_stop, client):
         headers={"Authorization": "Bearer good-token"},
         json={"stop_code": "99999"}
     )
+
     assert response.status_code == 400
     assert response.get_json()["error"] == "Invalid stop code"
