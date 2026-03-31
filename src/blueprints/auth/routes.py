@@ -100,7 +100,7 @@ def login():
 
         payload = {"email": email, "password": password, "returnSecureToken": True}
         res = requests.post(FIREBASE_LOGIN, json=payload)
-
+        return redirect(url_for('dashboard.home'))
         '''
         if res.status_code == 200:
             session["demo"] = False  # exit demo if previously on
