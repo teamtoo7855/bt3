@@ -121,3 +121,14 @@ def logout():
     flash("Logged out", category="Success")
     return redirect(url_for('auth.login'))
 
+
+@auth_bp.route("/error")
+def error():
+    status_code = request.args.get("status_code", 500)
+    error_message = request.args.get("error_message", "Please try again.")
+
+    return render_template(
+        "error.html",
+        status_code=status_code,
+        error_message=error_message
+    ), int(status_code)
