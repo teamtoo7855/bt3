@@ -1,7 +1,7 @@
 # Sprint 3 Report
 
 - **Team Name:** Team 2
-- **Sprint Dates:** March 3, 2026 - March 24, 2026
+- **Sprint Dates:** March 3, 2026 - March 31, 2026
 - **Sprint Board Link:** https://github.com/orgs/teamtoo7855/projects/1
 - **GitHub Repository Link:** https://github.com/teamtoo7855/bt3.git
 
