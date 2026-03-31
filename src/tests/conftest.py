@@ -78,7 +78,6 @@ def fake_db():
 @pytest.fixture
 def client(fake_db, monkeypatch):
     flask_app.config["TESTING"] = True
-    flask_app.config["WTF_CSRF_ENABLED"] = False
 
     import firebase
     monkeypatch.setattr(firebase, "db", fake_db)
