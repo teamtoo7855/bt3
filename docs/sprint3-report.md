@@ -2,7 +2,7 @@
 
 - **Team Name:** Team 2
 - **Sprint Dates:** March 3, 2026 - March 24, 2026
-- **Sprint Board Link:** [[Link]  ](https://github.com/teamtoo7855/bt3.git)
+- **Sprint Board Link:** https://github.com/orgs/teamtoo7855/projects/1
 - **GitHub Repository Link:** https://github.com/teamtoo7855/bt3.git
 
 ## 1. Sprint Board Screenshots
@@ -26,11 +26,11 @@
 
 **Not Completed / Partially Completed:**
 *Explain why these were not finished. (e.g., Underestimated complexity, spent more time writing quality tests for a single endpoint rather than rushing multiple endpoints, blockers with Mocking, etc.)*
-- Optimize static data lookup: [Reason]
-- Fix data types storedd per user profile: [Reason]
+- Optimize static data lookup: Scheduling conflict, apparently done but busy.
+- Fix data types storedd per user profile: Scheduling conflict, apparently done but busy.
 - Create Structured Testing Suite: [Reason]
-- Generate Automatedd Tests: [Reason]
-- Properly implement CSR: [Reason]
+- Generate Automated Tests: [Reason]
+
 
 ## 3. Architecture & UI Strategy
 **Code Modularization:**  
