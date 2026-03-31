@@ -41,20 +41,11 @@ def require_jwt(f):
         auth_header = request.headers.get("Authorization")
 
         if not auth_header:
-            return redirect(url_for(
-                'auth.error',
-                status_code=401,
-                error_message="Missing Authorization header"
-            ))
+            return jsonify({"error": "Missing Authorization header"}), 401
 
         # Check for "Bearer " prefix
         if not auth_header.startswith("Bearer "):
-            return redirect(url_for(
-                'auth.error',
-                status_code=401,
-                error_message="Invalid Authorization header format"
-            ))
-
+            return jsonify({"error": "Invalid Authorization header format"}), 401
         token = auth_header.split(" ")[1]
 
         try:
@@ -64,9 +55,6 @@ def require_jwt(f):
             # Inject uid into the route function
             return f(*args, uid=uid, **kwargs)
         except Exception:
-            return redirect(url_for(
-                'auth.error',
-                status_code=401,
-                error_message="Invalid Authorization header format"
-            ))
+            return jsonify({"error": "Invalid Authorization header format"}), 401
+
     return decorated_function
