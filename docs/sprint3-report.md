@@ -7,10 +7,10 @@
 
 ## 1. Sprint Board Screenshots
 *Provide screenshots of your Sprint 3 board filtered by each team member.*
-- **hi-im-vika:** `images/sprint3-board-[member1].png`
-- **JCslam14:** `images/sprint3-board-[member2].png`
-- **fyemane:** `images/sprint3-board-[member1].png`
-- **itsMegga:** `images/sprint3-board-[member2].png`
+- **hi-im-vika:** ![Screenshot of hi-im-vika Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint3-board-filter-hi-im-vika.png?raw=true)
+- **JCslam14:** ![Screenshot of JCslam14 Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint3-board-filter-JCslam14.png?raw=true)
+- **fyemane:** ![Screenshot of fyemane Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint3-board-filter-fyemane.png?raw=true)
+- **itsMegga:** ![Screenshot of itsMegga Board](https://github.com/teamtoo7855/bt3/blob/main/docs/images/sprint3-board-filter-itsMegga.png?raw=true)
 
 ## 2. Sprint Review (Planned vs. Delivered)
 *Review what you planned to accomplish this sprint versus what was actually completed. Focus on your architecture, testing, and UI goals.*
