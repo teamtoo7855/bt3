@@ -25,6 +25,16 @@ class FakeDocumentRef:
     def set(self, data):
         self.store[self.key] = data
 
+    def update(self, data):
+        if self.key not in self.store:
+            self.store[self.key] = {}
+
+        for k, v in data.items():
+            if isinstance(v, dict) and isinstance(self.store[self.key].get(k), dict):
+                self.store[self.key][k].update(v)
+            else:
+                self.store[self.key][k] = v
+
 
 class FakeCollection:
     def __init__(self, root_store, name):
@@ -49,11 +59,18 @@ class FakeDB:
 def fake_db():
     db = FakeDB()
 
-    db.collection("profile").document("test_user").set({
-        "prefs": {
-            "favorite_stops": ["12345", "67890"]
+    db.collection("profile").document("test_user").set(
+        {
+            "email": "test@example.com",
+            "prefs": {
+                "favorite_stops": ["12345", "67890"],
+                "favorite_routes": ["106"],
+                "favorite_bus_types": ["Standard"],
+                "theme": "Light",
+                "alerts": True,
+            },
         }
-    })
+    )
 
     return db
 
@@ -61,12 +78,19 @@ def fake_db():
 @pytest.fixture
 def client(fake_db, monkeypatch):
     flask_app.config["TESTING"] = True
+    flask_app.config["WTF_CSRF_ENABLED"] = False
 
     import firebase
     monkeypatch.setattr(firebase, "db", fake_db)
 
     import blueprints.api.routes as api_routes
     monkeypatch.setattr(api_routes, "db", fake_db)
+
+    import blueprints.auth.routes as auth_routes
+    monkeypatch.setattr(auth_routes, "db", fake_db)
+
+    import blueprints.profile.routes as profile_routes
+    monkeypatch.setattr(profile_routes, "db", fake_db)
 
     with flask_app.test_client() as test_client:
         yield test_client
