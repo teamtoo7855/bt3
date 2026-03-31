@@ -69,6 +69,23 @@ def fake_external_modules():
     sys.modules["keys"] = fake_keys
     sys.modules["src.keys"] = fake_keys
 
+    fake_gtfs_module = types.ModuleType("gtfs_realtime_pb2")
+
+    class FakeFeedMessage:
+        def ParseFromString(self, content):
+            return None
+
+    fake_gtfs_module.FeedMessage = FakeFeedMessage
+
+    fake_google = types.ModuleType("google")
+    fake_transit = types.ModuleType("google.transit")
+    fake_transit.gtfs_realtime_pb2 = fake_gtfs_module
+    fake_google.transit = fake_transit
+
+    sys.modules["google"] = fake_google
+    sys.modules["google.transit"] = fake_transit
+    sys.modules["google.transit.gtfs_realtime_pb2"] = fake_gtfs_module
+
     fake_firebase_admin = types.ModuleType("firebase_admin")
     fake_firebase_admin._apps = []
 
