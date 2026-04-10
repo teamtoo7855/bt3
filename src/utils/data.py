@@ -57,12 +57,12 @@ def check_id(bus_id : int):
             for r in t['fn_range']:
                 if len(r) % 2:
                     if bus_id == r[0]:
-                        bus_name = f'{t['year']} {t['manufacturer']} {t['model']}'
+                        bus_name = f"{t['year']} {t['manufacturer']} {t['model']}"
                         break
                     else:
                         continue
                     break
                 if bus_id in range(r[0], r[1]):
-                    bus_name = f'{t['year']} {t['manufacturer']} {t['model']}'
+                    bus_name = f"{t['year']} {t['manufacturer']} {t['model']}"
                     break
         return bus_name

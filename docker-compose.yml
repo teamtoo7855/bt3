@@ -2,12 +2,12 @@ version: "3.8"
 
 services:
   web:
-    build: ../..
+    build: .
     ports:
       - "5000:5000"
     env_file:
       - .env
     volumes:
-      - .:/app
+      - ./src:/app
     environment:
       - FLASK_DEBUG=1
