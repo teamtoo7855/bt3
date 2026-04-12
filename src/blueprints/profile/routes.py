@@ -76,10 +76,17 @@ def profile():
         prefs["favorite_routes"] = favorite_routes
         prefs["favorite_bus_types"] = favorite_types
         prefs["favorite_stops"] = favorite_stops
+        '''
+        error = validate_profile_data()
+        if error:
+            profile_data = {
 
+            }
+            return render_template("profile.html", profile_data=profile_data, error=error)
+        profile_data
         normalized = normalize_profile_data(profile_data)
         set_profile()
-
+'''
         #doc_ref.update({"prefs": prefs})
         #flash("Profile updated.", category="Success")
 
