@@ -35,8 +35,6 @@ def validate_favorite_stops(favorite_stop_id):
 
         for row in csv.DictReader(f):
             stops.append(row.get("stop_code"))
-        print (favorite_stop_id)
-        print (stops)
         if favorite_stop_id not in stops:
             return False
         return True
