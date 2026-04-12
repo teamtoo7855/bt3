@@ -89,28 +89,45 @@ def signup():
 @auth_bp.route('/login', methods=['GET', 'POST'])
 #@require_jwt
 def login():
-    error = None
-    if request.method == "POST":
-        email = (request.form.get('email') or "").strip()
-        password = request.form.get('password') or ""
+    if request.method == 'GET':
+        return render_template('login.html')
+    #error = None
 
-        if not validate_email(email) or not validate_password(password):
-            flash("Bad email or password.", category="Error")
-            return render_template('login.html', error=error)
+    email = (request.form.get('email') or "").strip()
+    password = request.form.get('password') or ""
 
+    if not validate_email(email) or not validate_password(password):
+        flash("Bad email or password.", category="Error")
+        return render_template('login.html', error=error)
+    try:
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={Config.FIREBASE_APIKEY}"
         payload = {"email": email, "password": password, "returnSecureToken": True}
         res = requests.post(FIREBASE_LOGIN, json=payload)
-        return redirect(url_for('dashboard.home'))
-        '''
         if res.status_code == 200:
-            session["demo"] = False  # exit demo if previously on
-            session['token'] = res.json()["idToken"]
-            curr_email = db.collection('profile').document(uid).get().to_dict().get('email', email)
-            flash(f"Logged in as {curr_email}", category="Success")
-            return redirect(url_for('auth.profile'))
-        else:
-            flash("Bad email or password.", category="Error")
-            '''
+            token_data = res.json()
+            uid = token_data.get("localId")
+            session["logged_in"] = True
+            session["username"] = uid
+            session["email"] = email
+            session["jwt_token"] = token_data.get("idToken")
+            return redirect(url_for('dashboard.home'))
+        error_data = res.json().get("error", {})
+        error_msg = error_data.get("message", "Invalid credentials")
+        if "INVALID_LOGIN_CREDENTIALS" in error_msg:
+            error_msg = "invalid email or pass"
+        return render_template('login.html', error=error_msg)
+    except requests.RequestException:
+        return render_template("login.html", error="Authentication service unavailable")
+    '''
+    if res.status_code == 200:
+        session["demo"] = False  # exit demo if previously on
+        session['token'] = res.json()["idToken"]
+        curr_email = db.collection('profile').document(uid).get().to_dict().get('email', email)
+        flash(f"Logged in as {curr_email}", category="Success")
+        return redirect(url_for('auth.profile'))
+    else:
+        flash("Bad email or password.", category="Error")
+        '''
 
     return render_template('login.html', error=error)
 
