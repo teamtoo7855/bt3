@@ -22,13 +22,16 @@ def profile():
     if not current_user:
         return redirect(url_for('auth.login'))
     if request.method == "GET":
-        profile_data = get_profile_data(current_user)
+        profile_data = get_profile_data(current_user) or {}
         return render_template('profile.html', profile_data=profile_data, error=None)
     '''
     doc_ref = db.collection('profile').document(uid)
     doc = doc_ref.get()
     user_data = doc.to_dict() if doc.exists else None
 '''
+
+    profile_data = get_profile_data(current_user)
+    prefs = (profile_data or {}).get("prefs", {})
     created = time.time()
     email = (request.form.get("email") or "").strip()
     # Update preferences from form
@@ -38,7 +41,8 @@ def profile():
     alerts = (request.form.get("alerts") or "").strip()
     add_stop = (request.form.get("add_stop") or "").strip()
 
-    prefs = (current_user or {}).get("prefs", {})
+
+
     favorite_routes = prefs.get("favorite_routes", []) or []
     favorite_types = prefs.get("favorite_bus_types", []) or []
     favorite_stops = prefs.get("favorite_stops", []) or []
@@ -93,7 +97,7 @@ def profile():
         return render_template("profile.html", profile_data=profile_data, error=error)
 
     normalized = normalize_profile_data(created, email, favorite_types, favorite_routes, favorite_stops, theme, alerts)
-    set_profile(current_user, normalized, merge=True)
+    set_profile(current_user, normalized, merge=False)
     return redirect(url_for("dashboard.home"))
 '''
         #doc_ref.update({"prefs": prefs})

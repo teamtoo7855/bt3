@@ -51,32 +51,32 @@ def validate_favorite_routes(favorite_route_id):
         '''
 
 #profile data normalization
-def normalize_profile_data(created, email, favorite_bus_type, favorite_bus_route, favorite_bus_stop_id, theme, alerts):
+def normalize_profile_data(created, email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts):
     return {
         #required fields
         "created": created.strip(),  # date created if wanted to use
         #non-required fields
         "email": email.strip(),
         "prefs": {
-            "favorite_bus_type": favorite_bus_type.strip(), #enter in a specified format
-            "favorite_bus_route": favorite_bus_route.strip(), #would be an id of sorts, can visually make it easy to understand
-            "favorite_bus_stop_id": favorite_bus_stop_id.strip(), #would be a number
+            "favorite_bus_types": favorite_bus_types.strip(), #enter in a specified format
+            "favorite_routes": favorite_routes.strip(), #would be an id of sorts, can visually make it easy to understand
+            "favorite_stops": favorite_stops.strip(), #would be a number
             "theme": theme.strip(), #theme strings tbd
             "alerts": alerts.strip(), #a true/false that would allow alert notifs
         }
     }
 
 
-def validate_profile_data(username, password, email, favorite_bus_type,
-                          favorite_bus_route, favorite_bus_stop_id, theme, alerts, created):
+def validate_profile_data(username, password, email, favorite_bus_types,
+                          favorite_routes, favorite_stops, theme, alerts, created):
     # Check all fields are strings
     fields = {
         "username": username,
         "password": password,
         "email": email,
-        "favorite_bus_type": favorite_bus_type,
-        "favorite_bus_route": favorite_bus_route,
-        "favorite_bus_stop_id": favorite_bus_stop_id,
+        "favorite_bus_types": favorite_bus_types,
+        "favorite_routes": favorite_routes,
+        "favorite_stops": favorite_stops,
         "theme": theme,
         "alerts": alerts,
         "created": created
@@ -90,9 +90,9 @@ def validate_profile_data(username, password, email, favorite_bus_type,
     username = username.strip()
     password = password.strip()
     email = email.strip()
-    favorite_bus_type = favorite_bus_type.strip()
-    favorite_bus_route = favorite_bus_route.strip()
-    favorite_bus_stop_id = favorite_bus_stop_id.strip()
+    favorite_bus_types = favorite_bus_types.strip()
+    favorite_routes = favorite_routes.strip()
+    favorite_stops = favorite_stops.strip()
     theme = theme.strip()
     alerts = alerts.strip()
     created = created.strip()
@@ -106,10 +106,10 @@ def validate_profile_data(username, password, email, favorite_bus_type,
         return "please enter your username"
 
     # Validate route and stop using your helper functions
-    if favorite_bus_route and not validate_favorite_routes(favorite_bus_route):
+    if favorite_routes and not validate_favorite_routes(favorite_routes):
         return "invalid favorite bus route"
 
-    if favorite_bus_stop_id and not validate_favorite_stops(favorite_bus_stop_id):
+    if favorite_stops and not validate_favorite_stops(favorite_stops):
         return "invalid favorite bus stop id"
 
     return None
