@@ -38,6 +38,14 @@ def validate_favorite_stops(favorite_stop_id):
         if favorite_stop_id not in stops:
             return False
         return True
+def validate_favorite_routes(favorite_route_id):
+    with open("./data/routes.txt", "r", encoding="utf-8-sig", newline="") as f:
+        routes = []
+        for row in csv.DictReader(f):
+            routes.append(row.get("route_short_name"))
+        if favorite_route_id not in routes:
+            return False
+        return True
     ''' 
     invalid_stops = []
     for multi down the line
