@@ -51,3 +51,33 @@ def test_profile_post_does_not_duplicate_stop(mock_verify, client):
 
     assert response.status_code == 200
     assert response.data.count(b"<li>12345</li>") == 1
+
+
+@patch("firebase_admin.auth.verify_id_token")
+def test_profile_post_sets_alerts_on(mock_verify, client):
+    mock_verify.return_value = {"uid": "test_user"}
+
+    response = client.post(
+        "/profile",
+        data={"alerts": "on"},
+        headers={"Authorization": "Bearer validtoken"},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Profile updated." in response.data
+
+
+@patch("firebase_admin.auth.verify_id_token")
+def test_profile_post_sets_alerts_off(mock_verify, client):
+    mock_verify.return_value = {"uid": "test_user"}
+
+    response = client.post(
+        "/profile",
+        data={"alerts": "off"},
+        headers={"Authorization": "Bearer validtoken"},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Profile updated." in response.data
