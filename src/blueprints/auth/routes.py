@@ -140,8 +140,9 @@ def login():
 
 @auth_bp.route('/logout', methods=['GET'])
 def logout():
-    session.pop('token', None)
-    session.pop('demo', None)
+    session.clear()
+    #session.pop('token', None)
+    #session.pop('demo', None)
     flash("Logged out", category="Success")
     return redirect(url_for('auth.login'))
 
