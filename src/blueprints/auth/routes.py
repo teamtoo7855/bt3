@@ -14,72 +14,79 @@ FIREBASE_LOGIN = Config.FIREBASE_LOGIN
 # -----------------------------
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
-    error = None
-    if request.method == "POST":
-        email = (request.form.get('email') or "").strip()
-        if not validate_email(email):
-            flash("Please enter a valid email.", category="Error")
-            return render_template('signup.html', error=error)
+    if request.method == "GET":
+        return render_template('signup.html')
 
-        password = request.form.get('password') or ""
-        password_confirm = request.form.get('password_confirm') or ""
+    #error = None
+    #if request.method == "POST":
+    email = (request.form.get('email') or "").strip()
+    if not validate_email(email):
+        flash("Please enter a valid email.", category="Error")
+        return render_template('signup.html', error=error)
 
-        if not validate_password(password):
-            flash("Password needs to be at least 8 characters long.", category="Error")
-            return render_template('signup.html', error=error)
+    password = request.form.get('password') or ""
+    password_confirm = request.form.get('password_confirm') or ""
 
-        if password != password_confirm:
-            flash("Passwords don't match.", category="Error")
-            return render_template('signup.html', error=error)
+    if not validate_password(password):
+        flash("Password needs to be at least 8 characters long.", category="Error")
+        return render_template('signup.html', error=error)
 
-        # NEW: preferences (optional)
-        favorite_route = (request.form.get("favorite_route") or "").strip()
-        favorite_type = (request.form.get("favorite_type") or "").strip()
-        theme = (request.form.get("theme") or "").strip()
-        alerts = (request.form.get("alerts") or "").strip()  # "on"/"off"/""
-        favorite_stop = (request.form.get("favorite_stop") or "").strip()
-        if not validate_favorite_stops(favorite_stop):
-            flash(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", category="Error")
-            return render_template('signup.html', error=error)
+    if password != password_confirm:
+        flash("Passwords don't match.", category="Error")
+        return render_template('signup.html', error=error)
+
+    # NEW: preferences (optional)
+    favorite_route = (request.form.get("favorite_route") or "").strip()
+    favorite_type = (request.form.get("favorite_type") or "").strip()
+    theme = (request.form.get("theme") or "").strip()
+    alerts = (request.form.get("alerts") or "").strip()  # "on"/"off"/""
+    favorite_stop = (request.form.get("favorite_stop") or "").strip()
+    if not validate_favorite_stops(favorite_stop):
+        flash(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", category="Error")
+        return render_template('signup.html', error=error)
+    '''
+    for multi down the line
+    favorite_stops = [stop.strip() for stop in favorite_stop.split(",") if stop.strip()]
+    if not validate_favorite_stops(favorite_stops):
+        flash(f"the following stops are invalid {validate_favorite_stops(favorite_stops)}", category="Error")
+        return render_template('signup.html', error=error)
         '''
-        for multi down the line
-        favorite_stops = [stop.strip() for stop in favorite_stop.split(",") if stop.strip()]
-        if not validate_favorite_stops(favorite_stops):
-            flash(f"the following stops are invalid {validate_favorite_stops(favorite_stops)}", category="Error")
-            return render_template('signup.html', error=error)
-            '''
-        # create auth account
-        try:
-            user = auth.create_user(email=email, password=password)
-        except:
-            flash("Error creating account. Email may already exist.", category="Error")
-            return render_template('signup.html', error=error)
+    # normalize alert value
+    alerts_value = ""
+    if alerts == "on":
+        alerts_value = True
+    elif alerts == "off":
+        alerts_value = False
 
-        # normalize alert value
-        alerts_value = ""
-        if alerts == "on":
-            alerts_value = True
-        elif alerts == "off":
-            alerts_value = False
-
-        user_data = {
-            "created": time.time(),
-            "email": email,
-            "prefs": {
-                "favorite_bus_types": [favorite_type] if favorite_type else [],
-                "favorite_routes": [favorite_route] if favorite_route else [],
-                "favorite_stops": [favorite_stop] if favorite_route else [],
-                "theme": theme,
-                "alerts": alerts_value
-            }
+    user_data = {
+        "created": time.time(),
+        "email": email,
+        "prefs": {
+            "favorite_bus_types": [favorite_type] if favorite_type else [],
+            "favorite_routes": [favorite_route] if favorite_route else [],
+            "favorite_stops": [favorite_stop] if favorite_route else [],
+            "theme": theme,
+            "alerts": alerts_value
         }
-
-        # store profile under uid
-        doc_ref = db.collection('profile').document(user.uid)
-        doc_ref.set(user_data)
-
+    }
+    # create auth account
+    try:
+        user = auth.create_user(email=email, password=password)
+        db.collection("profile").document(user.uid).set(user_data)
+        #doc_ref = db.collection('profile').document(user.uid)
+        #doc_ref.set(user_data)
         flash("Signed up successfully. Please log in.", category="Success")
         return redirect(url_for('auth.login'))
+    except:
+        flash("Error creating account. Email may already exist.", category="Error")
+        return render_template('signup.html', error=error)
+
+
+
+    # store profile under uid
+
+
+
 
     return render_template('signup.html', error=error)
 
