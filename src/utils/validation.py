@@ -68,3 +68,8 @@ def normalize_profile_data(username, password, email, favorite_bus_type,
         },
         "created": created.strip() #date created if wanted to use
     }
+
+def require_json_content_type():
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+    return None
