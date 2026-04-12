@@ -13,11 +13,11 @@
     <div class="row">
       <div>
         <label>Most-used route</label>
-        <input type="text" name="favorite_route" value="{{ (profile_data.prefs.favorite_bus_route[0] if profile_data.prefs.favorite_bus_route else '') }}">
+        <input type="text" name="favorite_route" value="{{ (profile_data.prefs.favorite_routes[0] if profile_data.prefs.favorite_routes else '') }}">
       </div>
       <div>
         <label>Preferred bus type</label>
-        <input type="text" name="favorite_type" value="{{ (profile_data.prefs.favorite_bus_type[0] if profile_data.prefs.favorite_bus_type else '') }}">
+        <input type="text" name="favorite_type" value="{{ (profile_data.prefs.favorite_bus_types[0] if profile_data.prefs.favorite_bus_types else '') }}">
       </div>
     </div>
 
