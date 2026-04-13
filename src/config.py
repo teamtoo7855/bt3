@@ -1,5 +1,10 @@
 import os
-import keys
+
+try:
+    from src import keys
+except ImportError:
+    import keys
+
 from dotenv import load_dotenv
 
 load_dotenv()
