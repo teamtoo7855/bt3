@@ -65,11 +65,11 @@ def test_normalize_profile_data_strips_whitespace():
     )
 
     assert result["email"] == "test@example.com"
-    assert result["preferences"]["favorite_bus_type"] == "Standard"
-    assert result["preferences"]["favorite_routes"] == "106"
-    assert result["preferences"]["favorite_stops"] == "12345"
-    assert result["preferences"]["theme"] == "Light"
-    assert result["preferences"]["alerts"] == "on"
+    assert result["prefs"]["favorite_bus_type"] == "Standard"
+    assert result["prefs"]["favorite_routes"] == "106"
+    assert result["prefs"]["favorite_stops"] == "12345"
+    assert result["prefs"]["theme"] == "Light"
+    assert result["prefs"]["alerts"] == "on"
 
 
 def test_validate_favorite_stops_valid(monkeypatch):
