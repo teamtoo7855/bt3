@@ -107,7 +107,7 @@ flowchart LR
 Base URL:
 
 ```
-http://localhost:5000
+http://localhost:8080
 ```
 
 | Method | Endpoint                       | Description                           | Parameters                                  | Auth Required |
