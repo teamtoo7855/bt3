@@ -57,9 +57,9 @@ def normalize_profile_data(email, favorite_bus_types, favorite_routes, favorite_
         #non-required fields
         "email": email.strip(),
         "prefs": {
-            "favorite_bus_types": favorite_bus_types.strip(), #enter in a specified format
-            "favorite_routes": favorite_routes.strip(), #would be an id of sorts, can visually make it easy to understand
-            "favorite_stops": favorite_stops.strip(), #would be a number
+            "favorite_bus_types": [x.strip() for x in favorite_bus_types], #enter in a specified format
+            "favorite_routes": [x.strip() for x in favorite_routes], #would be an id of sorts, can visually make it easy to understand
+            "favorite_stops": [x.strip() for x in favorite_stops], #would be a number
             "theme": theme.strip(), #theme strings tbd
             "alerts": alerts.strip(), #a true/false that would allow alert notifs
         }
