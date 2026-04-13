@@ -114,7 +114,7 @@ def login():
             token_data = res.json()
             uid = token_data.get("localId")
             session["logged_in"] = True
-            session["username"] = uid
+            session["uid"] = uid
             session["email"] = email
             session["jwt_token"] = token_data.get("idToken")
             return redirect(url_for('dashboard.home'))
