@@ -51,10 +51,9 @@ def validate_favorite_routes(favorite_route_id):
         '''
 
 #profile data normalization
-def normalize_profile_data(created, email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts):
+def normalize_profile_data(email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts):
     return {
         #required fields
-        "created": created.strip(),  # date created if wanted to use
         #non-required fields
         "email": email.strip(),
         "prefs": {
@@ -67,20 +66,14 @@ def normalize_profile_data(created, email, favorite_bus_types, favorite_routes, 
     }
 
 
-def validate_profile_data(username, password, email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts, created):
-
-    if not isinstance(username, str):
-        return "username must be a string"
-    if not isinstance(password, str):
-        return "password must be a string"
+def validate_profile_data(email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts):
+    
     if not isinstance(email, str):
         return "email must be a string"
     if not isinstance(theme, str):
         return "theme must be a string"
     if not isinstance(alerts, str):
         return "alerts must be a string"
-    if not isinstance(created, float):
-        return "created must be a string"
 
     # lists of strings
     if not isinstance(favorite_bus_types, list):
@@ -103,13 +96,9 @@ def validate_profile_data(username, password, email, favorite_bus_types, favorit
         if not isinstance(item, str):
             return "favorite_stops must contain only strings"
 
-
-    username = username.strip()
-    password = password.strip()
     email = email.strip()
     theme = theme.strip()
     alerts = alerts.strip()
-    #created = created.strip()
 
     # normalize list values too
     favorite_bus_types = [x.strip() for x in favorite_bus_types]
