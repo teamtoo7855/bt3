@@ -243,6 +243,7 @@ def test_shape_returns_geojson_from_trip_id(client, monkeypatch):
     )
 
     def fake_open(path, *args, **kwargs):
+        path = str(path)
         if "stop_times.txt" in path:
             return StringIO(stop_times_csv)
         if "trips.txt" in path:
@@ -271,6 +272,7 @@ def test_shape_resolves_trip_id_from_stop_id(client, monkeypatch):
     )
 
     def fake_open(path, *args, **kwargs):
+        path = str(path)
         if "stop_times.txt" in path:
             return StringIO(stop_times_csv)
         if "trips.txt" in path:

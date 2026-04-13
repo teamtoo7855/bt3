@@ -1,6 +1,65 @@
+import os
+import sys
+import types
+from unittest.mock import Mock
+
 import pytest
+
+# -------------------------
+# Make tests CI-safe before importing the app
+# -------------------------
+
+os.environ.setdefault("FLASK_SECRET_KEY", "test-secret-key")
+os.environ.setdefault("FIREBASE_SERVICE_ACCOUNT", "dummy-service-account.json")
+
+fake_keys = types.SimpleNamespace(
+    mapbox_access_token="test-mapbox-token",
+    translink_api_key="test-translink-key",
+    firebase_apikey="test-firebase-api-key",
+)
+sys.modules["keys"] = fake_keys
+sys.modules["src.keys"] = fake_keys
+
+# Stub Firebase Admin initialization before importing app
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+firebase_admin._apps = []
+credentials.Certificate = Mock(return_value=object())
+firebase_admin.initialize_app = Mock(return_value=object())
+firestore.client = Mock(return_value=object())
+
+# Provide a fake utils.data module so app import never touches local GTFS files
+fake_utils_data = types.ModuleType("utils.data")
+fake_utils_data.STOPCODE_TO_STOPID = {"12345": "STOP1", "67890": "STOP2"}
+fake_utils_data.SHORT_TO_ROUTEID = {"106": "R1", "144": "R2"}
+
+def fake_check_id(bus_id):
+    return None
+
+fake_utils_data.check_id = fake_check_id
+sys.modules["utils.data"] = fake_utils_data
+
 from app import app as flask_app
 
+
+# -------------------------
+# Block accidental real network calls
+# -------------------------
+
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch):
+    import requests.sessions
+
+    def block(*args, **kwargs):
+        raise AssertionError("Real network access is not allowed in tests")
+
+    monkeypatch.setattr(requests.sessions.Session, "request", block)
+
+
+# -------------------------
+# Fake Firestore
+# -------------------------
 
 class FakeDocSnapshot:
     def __init__(self, data=None):
