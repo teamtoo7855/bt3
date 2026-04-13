@@ -17,6 +17,7 @@ from flask import current_app as app
 limiter = Limiter(get_remote_address, app=app)
 
 
+
 GTFS_TRIP_URL = Config.GTFS_TRIP_URL
 
 @api_bp.get("/next_arrival")
