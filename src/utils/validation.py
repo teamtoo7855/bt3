@@ -67,7 +67,7 @@ def normalize_profile_data(email, favorite_bus_types, favorite_routes, favorite_
 
 
 def validate_profile_data(email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts):
-    
+
     if not isinstance(email, str):
         return "email must be a string"
     if not isinstance(theme, str):
@@ -108,10 +108,6 @@ def validate_profile_data(email, favorite_bus_types, favorite_routes, favorite_s
 
     if email and not validate_email(email):
         return "invalid email address"
-
-    if password and not validate_password(password):
-        return "password must be at least 8 characters"
-
 
     for route in favorite_routes:
         if not validate_favorite_routes(route):
