@@ -46,9 +46,9 @@ def test_validate_profile_data_valid_returns_none():
         username="faniel",
         password="password123",
         email="test@example.com",
-        favorite_bus_type="Standard",
-        favorite_bus_route="106",
-        favorite_bus_stop_id="12345",
+        favorite_bus_types="Standard",
+        favorite_routes="106",
+        favorite_stops="12345",
         theme="Light",
         alerts="on",
         created="today",
@@ -62,9 +62,9 @@ def test_normalize_profile_data_strips_whitespace():
         username=" faniel ",
         password=" password123 ",
         email=" test@example.com ",
-        favorite_bus_type=" Standard ",
-        favorite_bus_route=" 106 ",
-        favorite_bus_stop_id=" 12345 ",
+        favorite_bus_types=" Standard ",
+        favorite_routes=" 106 ",
+        favorite_stops=" 12345 ",
         theme=" Light ",
         alerts=" on ",
         created=" today ",
@@ -74,8 +74,8 @@ def test_normalize_profile_data_strips_whitespace():
     assert result["password"] == "password123"
     assert result["email"] == "test@example.com"
     assert result["preferences"]["favorite_bus_type"] == "Standard"
-    assert result["preferences"]["favorite_bus_route"] == "106"
-    assert result["preferences"]["favorite_bus_stop_id"] == "12345"
+    assert result["preferences"]["favorite_routes"] == "106"
+    assert result["preferences"]["favorite_stops"] == "12345"
     assert result["preferences"]["theme"] == "Light"
     assert result["preferences"]["alerts"] == "on"
     assert result["created"] == "today"
