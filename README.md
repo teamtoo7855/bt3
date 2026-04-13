@@ -50,3 +50,54 @@ FIREBASE_APIKEY=your_secret_key_here
 ```
 
 
+## Architecture Overview
+
+The system follows a client–server architecture.
+
+* Frontend: Handles map rendering, UI interactions, and visualization
+* Backend: Provides API endpoints, processes transit data, and manages sessions
+* External APIs: TransLink (transit data), Mapbox (map rendering)
+* Storage: Firestore for user profiles and preferences
+
+
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+    %% Client Layer
+    User[User Browser]
+    UI[Frontend UI<br/>Mapbox + JS]
+
+    %% Backend Layer
+    API[Flask Backend API]
+    ETA[ETA Logic<br/>/api/next_arrival]
+    Shape[Route Shape Service<br/>/api/shape]
+    Profile[Profile Service<br/>JWT Protected]
+
+    %% Data Layer
+    Cache[(In-Memory / Refresh)]
+    Firestore[(Firestore DB)]
+    Static[(GTFS Static Files)]
+
+    %% External Systems
+    TransLink[TransLink GTFS Realtime API]
+    Mapbox[Mapbox API]
+
+    %% Connections
+    User --> UI
+    UI -->|HTTP Requests| API
+
+    API --> ETA
+    API --> Shape
+    API --> Profile
+
+    ETA --> TransLink
+    ETA --> Cache
+
+    Shape --> Static
+
+    Profile --> Firestore
+
+    UI --> Mapbox
+```
+
