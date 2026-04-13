@@ -1,5 +1,5 @@
 from firebase import db
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, url_for, flash, make_response
 from firebase_admin import credentials, firestore, auth
 from config import Config
 from . import auth_bp
@@ -138,13 +138,16 @@ def login():
 
     return render_template('login.html', error=error)
 
-@auth_bp.route('/logout', methods=['GET'])
+@auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     #session.pop('token', None)
     #session.pop('demo', None)
-    flash("Logged out", category="Success")
-    return redirect(url_for('auth.login'))
+    response = make_response(redirect(url_for('auth.login')))
+    response.delete_cookie('session')
+    
+    flash("Logged out", category="success")
+    return response
 
 
 @auth_bp.route("/error")
