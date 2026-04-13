@@ -44,9 +44,9 @@ def test_validate_password(password, expected):
 def test_validate_profile_data_valid_returns_none():
     result = validate_profile_data(
         email="test@example.com",
-        favorite_bus_types="Standard",
-        favorite_routes="106",
-        favorite_stops="12345",
+        favorite_bus_types=["Standard"],
+        favorite_routes=["106"],
+        favorite_stops=["60607"],
         theme="Light",
         alerts="on"
     )
@@ -57,17 +57,17 @@ def test_validate_profile_data_valid_returns_none():
 def test_normalize_profile_data_strips_whitespace():
     result = normalize_profile_data(
         email=" test@example.com ",
-        favorite_bus_types=" Standard ",
-        favorite_routes=" 106 ",
-        favorite_stops=" 12345 ",
+        favorite_bus_types=[" Standard "],
+        favorite_routes=[" 106 "],
+        favorite_stops=[" 60607 "],
         theme=" Light ",
         alerts=" on "
     )
 
     assert result["email"] == "test@example.com"
-    assert result["prefs"]["favorite_bus_type"] == "Standard"
-    assert result["prefs"]["favorite_routes"] == "106"
-    assert result["prefs"]["favorite_stops"] == "12345"
+    assert result["prefs"]["favorite_bus_types"] == ["Standard"]
+    assert result["prefs"]["favorite_routes"] == ["106"]
+    assert result["prefs"]["favorite_stops"] == ["60607"]
     assert result["prefs"]["theme"] == "Light"
     assert result["prefs"]["alerts"] == "on"
 
