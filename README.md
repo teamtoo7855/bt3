@@ -121,3 +121,24 @@ http://localhost:8080
 | DELETE | `/api/profile/stops/<fav_idx>` | Delete a favorite stop                | `fav_idx` (path)                            | Yes (JWT)     |
 
 
+## Features
+
+* Real-time bus tracking with periodic refresh
+* Route highlighting when hovering over buses
+* Stop interaction with route visualization
+* ETA lookup for specific buses and stops
+* User profile with saved preferences
+* Basic chart visualization of active bus types on route
+
+
+## Security Notes
+
+API keys are currently exposed in the frontend and should not be used in a public deployment. This should be addressed by moving key usage to the backend.
+
+
+## Handoff Notes
+
+* Ensure `.env` is configured before running
+* The application depends on live TransLink API availability
+* Session-based authentication is used
+* Frontend expects specific GeoJSON formats from backend endpoints
