@@ -11,6 +11,7 @@ from blueprints.data_geojson import data_geojson_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 
+
 # Register blueprints
 app.register_blueprint(dashboard_bp)  # Handles root route /
 app.register_blueprint(auth_bp)
