@@ -48,8 +48,7 @@ def test_validate_profile_data_valid_returns_none():
         favorite_routes="106",
         favorite_stops="12345",
         theme="Light",
-        alerts="on",
-        created="today",
+        alerts="on"
     )
 
     assert result is None
@@ -62,8 +61,7 @@ def test_normalize_profile_data_strips_whitespace():
         favorite_routes=" 106 ",
         favorite_stops=" 12345 ",
         theme=" Light ",
-        alerts=" on ",
-        created=" today ",
+        alerts=" on "
     )
 
     assert result["email"] == "test@example.com"
@@ -72,7 +70,6 @@ def test_normalize_profile_data_strips_whitespace():
     assert result["preferences"]["favorite_stops"] == "12345"
     assert result["preferences"]["theme"] == "Light"
     assert result["preferences"]["alerts"] == "on"
-    assert result["created"] == "today"
 
 
 def test_validate_favorite_stops_valid(monkeypatch):
