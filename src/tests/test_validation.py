@@ -43,8 +43,6 @@ def test_validate_password(password, expected):
 
 def test_validate_profile_data_valid_returns_none():
     result = validate_profile_data(
-        username="faniel",
-        password="password123",
         email="test@example.com",
         favorite_bus_types="Standard",
         favorite_routes="106",
@@ -59,8 +57,6 @@ def test_validate_profile_data_valid_returns_none():
 
 def test_normalize_profile_data_strips_whitespace():
     result = normalize_profile_data(
-        username=" faniel ",
-        password=" password123 ",
         email=" test@example.com ",
         favorite_bus_types=" Standard ",
         favorite_routes=" 106 ",
@@ -70,8 +66,6 @@ def test_normalize_profile_data_strips_whitespace():
         created=" today ",
     )
 
-    assert result["username"] == "faniel"
-    assert result["password"] == "password123"
     assert result["email"] == "test@example.com"
     assert result["preferences"]["favorite_bus_type"] == "Standard"
     assert result["preferences"]["favorite_routes"] == "106"
