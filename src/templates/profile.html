@@ -42,13 +42,16 @@
 
     <label>Add favorite stop</label>
     <input type="text" name="add_stop" placeholder="e.g. 56934">
-
-    <div class="btnbar">
-      <button type="submit">Save Changes</button>
-      <a class="btn ghost" href="/">Go to Map</a>
-      <a class="btn ghost" href="/logout">Logout</a>
-    </div>
   </form>
+
+  <div class="btnbar">
+    <button type="submit" form="profile-form">Save Changes</button>
+    <a class="btn ghost" href="/">Go to Map</a>
+
+    <form action="{{ url_for('auth.logout') }}" method="POST" style="display:inline;">
+      <button type="submit" class="btn ghost">Logout</button>
+    </form>
+  </div>
 
   <div class="divider"></div>
 

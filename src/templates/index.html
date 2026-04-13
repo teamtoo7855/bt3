@@ -456,8 +456,12 @@ profileBtn.onclick = () => {
 };
 
 // Logout (adjust endpoint if needed)
-logoutBtn.onclick = () => {
-  window.location.href = "/logout";
+logoutBtn.onclick = async () => {
+  await fetch("/logout", {
+    method: "POST"
+  });
+
+  window.location.href = "/login";
 };
 const stopInput = document.getElementById("stopInput");
 const busInput = document.getElementById("busInput");
