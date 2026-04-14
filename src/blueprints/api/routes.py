@@ -168,6 +168,7 @@ def get_shape():
 @require_jwt
 def api_profile_stops_get_all(uid: str):
     stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
+    logger.info("favorite stops",extra={"stops":stops})
     return jsonify(stops)
     #uid = validate_jwt()
     #if uid:
@@ -181,8 +182,10 @@ def api_profile_stops_get_one(fav_idx, uid: str):
     stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
     try:
         stop_n = stops[int(fav_idx)]
+        logger.info("favorite stop number",extra={"stop_n":stop_n})
         return jsonify(stop_n)
     except:
+        logger.error("no stop at index",extra={"stop_n":stop_n})
         return jsonify({"error": "No stop at index"}), 400
     #uid = validate_jwt()
     #if uid:
