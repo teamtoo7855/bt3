@@ -19,7 +19,7 @@ FIREBASE_LOGIN = Config.FIREBASE_LOGIN
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == "GET":
-        return render_template('signup.html')
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN)
 
     #error = None
     #if request.method == "POST":
@@ -27,7 +27,7 @@ def signup():
     if not validate_email(email):
         logger.warning("Entered email invalid", extra={"email":email})
         flash("Please enter a valid email.", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
     password = request.form.get('password') or ""
     password_confirm = request.form.get('password_confirm') or ""
@@ -35,12 +35,12 @@ def signup():
     if not validate_password(password):
         logger.warning("Entered password invalid", extra={"password":password})
         flash("Password needs to be at least 8 characters long.", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
     if password != password_confirm:
         logger.warning("Passwords don't match", extra={"password":password})
         flash("Passwords don't match.", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
     # NEW: preferences (optional)
     favorite_route = (request.form.get("favorite_route") or "").strip()
@@ -51,13 +51,13 @@ def signup():
     if not validate_favorite_stops(favorite_stop):
         logger.warning(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", extra={"favorite_stop":favorite_stop})
         flash(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
     '''
     for multi down the line
     favorite_stops = [stop.strip() for stop in favorite_stop.split(",") if stop.strip()]
     if not validate_favorite_stops(favorite_stops):
         flash(f"the following stops are invalid {validate_favorite_stops(favorite_stops)}", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
         '''
     # normalize alert value
     alerts_value = ""
@@ -89,7 +89,7 @@ def signup():
     except:
         logger.error("Error creating account. Email may already exits", extra={"email": email})
         flash("Error creating account. Email may already exist.", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
 
 
@@ -98,7 +98,7 @@ def signup():
 
 
 
-    return render_template('signup.html', error=error)
+    return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
 # -----------------------------
 # AUTH: LOGIN
@@ -107,7 +107,7 @@ def signup():
 #@require_jwt
 def login():
     if request.method == 'GET':
-        return render_template('login.html')
+        return render_template('login.html', key=Config.MAPBOX_ACCESS_TOKEN)
     #error = None
 
     email = (request.form.get('email') or "").strip()
@@ -116,7 +116,7 @@ def login():
     if not validate_email(email) or not validate_password(password):
         logger.warning("Bad email or password", extra={"email":email})
         flash("Bad email or password.", category="Error")
-        return render_template('login.html', error=error)
+        return render_template('login.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
     try:
         url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={Config.FIREBASE_API_KEY}"
         payload = {"email": email, "password": password, "returnSecureToken": True}
@@ -135,10 +135,10 @@ def login():
         if "INVALID_LOGIN_CREDENTIALS" in error_msg:
             error_msg = "invalid email or pass"
         logger.info(error_msg, extra={"email":email})
-        return render_template('login.html', error=error_msg)
+        return render_template('login.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error_msg)
     except requests.RequestException:
         logger.error("Unable to authenticate")
-        return render_template("login.html", error="Authentication service unavailable")
+        return render_template("login.html", key=Config.MAPBOX_ACCESS_TOKEN, error="Authentication service unavailable")
     '''
     if res.status_code == 200:
         session["demo"] = False  # exit demo if previously on
@@ -150,7 +150,7 @@ def login():
         flash("Bad email or password.", category="Error")
         '''
 
-    return render_template('login.html', error=error)
+    return render_template('login.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():

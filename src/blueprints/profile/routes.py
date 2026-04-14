@@ -5,6 +5,7 @@ from utils.validation import normalize_profile_data, validate_profile_data
 from utils.auth import get_current_user
 from utils.profile import get_profile_data, set_profile
 from utils.auth import get_current_user
+from config import Config
 from . import profile_bp
 from decorators.auth import require_jwt
 from firebase import db
@@ -23,7 +24,7 @@ def profile():
         return redirect(url_for('auth.login'))
     if request.method == "GET":
         profile_data = get_profile_data(current_user) or {}
-        return render_template('profile.html', profile_data=profile_data, error=None)
+        return render_template('profile.html', key=Config.MAPBOX_ACCESS_TOKEN, profile_data=profile_data, error=None)
     '''
     doc_ref = db.collection('profile').document(uid)
     doc = doc_ref.get()

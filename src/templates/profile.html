@@ -1,6 +1,25 @@
 {% extends "layout.html" %}
 {% block body %}
 
+<!-- Map container -->
+<div id="map"></div>
+
+<style>
+  body {
+    margin: 0;
+  }
+
+  #map {
+    filter: blur(1px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
+  }
+</style>
+
 <h2>Your Profile</h2>
 <p>Manage preferences used by the app (routes, stops, theme, alerts).</p>
 
@@ -73,5 +92,41 @@
 {% else %}
   <p>No profile loaded.</p>
 {% endif %}
+
+<!-- Mapbox -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" rel="stylesheet" />
+
+<script>
+mapboxgl.accessToken = "{{key}}";
+
+const map = new mapboxgl.Map({
+  container: "map",
+  style: "mapbox://styles/mapbox/dark-v11",
+  center: [-123.115272, 49.287114],
+  zoom: 16,
+  pitch: 60,
+  bearing: -55,
+  antialias: true,
+  interactive: false
+});
+
+map.on("load", () => {
+  map.addLayer(
+    {
+      id: "3d-buildings",
+      source: "composite",
+      "source-layer": "building",
+      filter: ["==", "extrude", "true"],
+      type: "fill-extrusion",
+      paint: {
+        "fill-extrusion-color": "#aaa",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-opacity": 0.8
+      }
+    });
+});
+</script>
 
 {% endblock %}

@@ -107,7 +107,7 @@ mapboxgl.accessToken = "{{key}}";
 //define map box map with center being based on Burnaby
 const map = new mapboxgl.Map({
   container: "map",
-  style: "mapbox://styles/mapbox/standard",
+  style: "mapbox://styles/mapbox/navigation-night-v1",
   config: {
     basemap: {
       showTransitLabels: false
@@ -131,18 +131,6 @@ map.on("load", () => {
     data: "/vehicles.geojson"
   });
 
-  map.addLayer({
-    id: "bus-points",
-    type: "circle",
-    source: "buses",
-    paint: {
-      "circle-radius": 7,
-      "circle-color": "#007cbf",
-      "circle-stroke-width": 3,
-      "circle-stroke-color": "#ffffff"
-    }
-  });
-
   map.addSource("stops", {
     type: "geojson",
     data: "/stops.geojson"
@@ -158,6 +146,18 @@ map.on("load", () => {
       "circle-color": "#ec5277",
       "circle-stroke-width": 3,
       "circle-stroke-color": "#ffffff"
+    }
+  });
+
+    map.addLayer({
+    id: "bus-points",
+    type: "circle",
+    source: "buses",
+    paint: {
+      "circle-radius": 7,
+      "circle-color": "#034efc",
+      "circle-stroke-width": 2.5,
+      "circle-stroke-color": "#eeeeee"
     }
   });
 
@@ -230,13 +230,15 @@ map.on("load", () => {
                 'line-cap': 'round'
             },
             paint: {
-                'line-color': '#888',
+                'line-color': '#fa6502',
                 'line-width': 8
             }
-          });
+          },
+          "bus-points"
+        );
         }
         //add a time delay before routes are registeredd
-      }, 100);
+      }, 50);
     }
   });
 
