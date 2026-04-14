@@ -7,7 +7,5 @@ services:
       - "8080:8080"
     env_file:
       - .env
-    volumes:
-      - ./src:/app
     environment:
       - FLASK_DEBUG=1
