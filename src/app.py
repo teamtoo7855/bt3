@@ -1,5 +1,6 @@
 from flask import Flask
 from config import Config
+from models import check_db_exists, reflect_tables, db
 
 # Import blueprints
 from blueprints.auth import auth_bp
@@ -11,6 +12,9 @@ from blueprints.data_geojson import data_geojson_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 
+db.init_app(app)
+check_db_exists(app)
+reflect_tables(app)
 
 # Register blueprints
 app.register_blueprint(dashboard_bp)  # Handles root route /
