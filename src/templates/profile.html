@@ -1,32 +1,77 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<style>
-    table,
-    th,
-    td {
-        border: 1px solid black;
-    }
-</style>
+<h2>Your Profile</h2>
+<p>Manage preferences used by the app (routes, stops, theme, alerts).</p>
 
-<h1>Profile</h1>
-{% if error %}
-<p class=error><strong>Error:</strong> {{ error }}
-    {% endif %}
+{% if profile_data %}
+  <div class="divider"></div>
 
-<table>
-    <tr>
-        <td>Email</td>
-        <td>{{ user_data.email }}</td>
-    </tr>
-    <tr>
-        <td>Favourite bus route</td>
-        <td>{{ user_data.prefs.favorite_bus_route }}</td>
-    </tr>
-    <tr>
-        <td>Theme</td>
-        <td>{{ user_data.prefs.theme }}</td>
-    </tr>
-</table>
-<a href="/logout">Logout</a>
+  <p><b>Email:</b> {{ profile_data.email }}</p>
+
+  <form method="post" action="/profile">
+    <div class="row">
+      <div>
+        <label>Most-used route</label>
+        <input type="text" name="favorite_route" value="{{ (profile_data.prefs.favorite_routes[0] if profile_data.prefs.favorite_routes else '') }}">
+      </div>
+      <div>
+        <label>Preferred bus type</label>
+        <input type="text" name="favorite_type" value="{{ (profile_data.prefs.favorite_bus_types[0] if profile_data.prefs.favorite_bus_types else '') }}">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Theme</label>
+        <select name="theme">
+          <option value="" {% if not profile_data.prefs.theme %}selected{% endif %}>Default</option>
+          <option value="Light" {% if profile_data.prefs.theme == "Light" %}selected{% endif %}>Light</option>
+          <option value="Dark" {% if profile_data.prefs.theme == "Dark" %}selected{% endif %}>Dark</option>
+        </select>
+      </div>
+      <div>
+        <label>Alerts</label>
+        <select name="alerts">
+          <option value="" {% if profile_data.prefs.alerts == "" %}selected{% endif %}>Default</option>
+          <option value="on" {% if profile_data.prefs.alerts == True or profile_data.prefs.alerts == "on" %}selected{% endif %}>Enabled</option>
+          <option value="off" {% if profile_data.prefs.alerts == False or profile_data.prefs.alerts == "off" %}selected{% endif %}>Disabled</option>
+        </select>
+      </div>
+    </div>
+
+    <label>Add favorite stop</label>
+    <input type="text" name="add_stop" placeholder="e.g. 56934">
+  </form>
+
+  <div class="btnbar">
+    <button type="submit" form="profile-form">Save Changes</button>
+    <a class="btn ghost" href="/">Go to Map</a>
+
+    <form action="{{ url_for('auth.logout') }}" method="POST" style="display:inline;">
+      <button type="submit" class="btn ghost">Logout</button>
+    </form>
+  </div>
+
+  <div class="divider"></div>
+
+  {% set prefs = profile_data.get("prefs", {}) %}
+  {% set stops = prefs.get("favorite_stops", []) %}
+
+  <h3>Favorite stops</h3>
+
+  {% if stops %}
+    <ul>
+      {% for s in stops %}
+        <li>{{ s }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No favorite stops saved yet.</p>
+  {% endif %}
+
+{% else %}
+  <p>No profile loaded.</p>
+{% endif %}
+
 {% endblock %}

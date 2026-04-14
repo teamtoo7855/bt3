@@ -217,9 +217,11 @@ __marimo__/
 
 # IDE files
 .idea/
+.vscode/
 
-keys.py
+data/
 types.pkl
 serviceAccountKey.json
 .postman/
 postman/
+keys.py
