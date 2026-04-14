@@ -25,6 +25,7 @@ def signup():
     #if request.method == "POST":
     email = (request.form.get('email') or "").strip()
     if not validate_email(email):
+        logger.warning("Entered email invalid", extra={"email":email})
         flash("Please enter a valid email.", category="Error")
         return render_template('signup.html', error=error)
 
@@ -32,10 +33,12 @@ def signup():
     password_confirm = request.form.get('password_confirm') or ""
 
     if not validate_password(password):
+        logger.warning("Entered password invalid", extra={"password":password})
         flash("Password needs to be at least 8 characters long.", category="Error")
         return render_template('signup.html', error=error)
 
     if password != password_confirm:
+        logger.warning("Passwords don't match", extra={"password":password})
         flash("Passwords don't match.", category="Error")
         return render_template('signup.html', error=error)
 
@@ -46,6 +49,7 @@ def signup():
     alerts = (request.form.get("alerts") or "").strip()  # "on"/"off"/""
     favorite_stop = (request.form.get("favorite_stop") or "").strip()
     if not validate_favorite_stops(favorite_stop):
+        logger.warning(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", extra={"favorite_stop":favorite_stop})
         flash(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", category="Error")
         return render_template('signup.html', error=error)
     '''
@@ -79,9 +83,11 @@ def signup():
         db.collection("profile").document(user.uid).set(user_data)
         #doc_ref = db.collection('profile').document(user.uid)
         #doc_ref.set(user_data)
+        logger.info("Signed up successfully. Please log in.", extra={"email":email})
         flash("Signed up successfully. Please log in.", category="Success")
         return redirect(url_for('auth.login'))
     except:
+        logger.error("Error creating account. Email may already exits", extra={"email": email})
         flash("Error creating account. Email may already exist.", category="Error")
         return render_template('signup.html', error=error)
 
