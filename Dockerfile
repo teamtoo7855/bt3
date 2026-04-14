@@ -1,10 +1,12 @@
-FROM python:3.11-slim
-#FROM ubuntu:latest
+FROM ghcr.io/astral-sh/uv:alpine
+# Copy the project into the image
+COPY . /app
+
+# Disable development dependencies
+ENV UV_NO_DEV=1
+
+# Sync the project into a new environment, asserting the lockfile is up to date
 WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY .. .
+RUN uv sync --locked
 EXPOSE 8080
-CMD ["python", "app.py"]
+CMD ["uv", "run", "src/app.py"]
