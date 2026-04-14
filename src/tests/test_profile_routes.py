@@ -6,7 +6,7 @@ def test_profile_get_returns_200(mock_verify, client):
     mock_verify.return_value = {"uid": "test_user"}
 
     response = client.get(
-        "/profile",
+        "/api/profile",
         headers={"Authorization": "Bearer validtoken"},
         follow_redirects=True,
     )
@@ -21,7 +21,7 @@ def test_profile_post_updates_fields(mock_verify, client):
     mock_verify.return_value = {"uid": "test_user"}
 
     response = client.post(
-        "/profile",
+        "/api/profile",
         data={
             "favorite_route": "222",
             "favorite_type": "Electric",
@@ -43,7 +43,7 @@ def test_profile_post_does_not_duplicate_stop(mock_verify, client):
     mock_verify.return_value = {"uid": "test_user"}
 
     response = client.post(
-        "/profile",
+        "/api/profile",
         data={"add_stop": "12345"},
         headers={"Authorization": "Bearer validtoken"},
         follow_redirects=True,
