@@ -154,8 +154,65 @@ def get_shape():
                         }
                     )
 
+@api_bp.get('/stop_code/<stop_code>/shapes')
+def stop_code_shapes(stop_code):
+    with app.app_context():
+        Shape    = Models["shapes"].__table__
+        Stop     = Models["stops"].__table__
+        StopTime = Models["stop_times"].__table__
+        Trip     = Models["trips"].__table__
 
+        # Subquery — get distinct shape_ids for the stop_code
+        subquery = (
+            dba.select(Trip.c.shape_id)
+            .distinct()
+            .select_from(Stop)
+            .join(StopTime, Stop.c.stop_id   == StopTime.c.stop_id)
+            .join(Trip,     StopTime.c.trip_id == Trip.c.trip_id)
+            .where(Stop.c.stop_code == stop_code)
+            .subquery()
+        )
 
+        # Main query — get all shape points for those shape_ids
+        stmt = (
+            dba.select(
+                Shape.c.shape_id,
+                Shape.c.shape_pt_lat,
+                Shape.c.shape_pt_lon,
+                Shape.c.shape_pt_sequence
+            )
+            .where(Shape.c.shape_id.in_(dba.select(subquery)))
+            .order_by(Shape.c.shape_id, Shape.c.shape_pt_sequence)
+        )
+
+        rows = dba.session.execute(stmt).all()
+
+    # Group shape points by shape_id
+    shapes = {}
+    for row in rows:
+        if row.shape_id not in shapes:
+            shapes[row.shape_id] = []
+        shapes[row.shape_id].append([row.shape_pt_lon, row.shape_pt_lat])
+
+    # Build a GeoJSON feature per shape
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": coordinates
+            },
+            "properties": {
+                "shape_id": shape_id
+            }
+        }
+        for shape_id, coordinates in shapes.items()
+    ]
+
+    return jsonify({
+        "type": "FeatureCollection",
+        "features": features
+    })
 
 
 @api_bp.route('/profile/stops', methods=['GET'])
