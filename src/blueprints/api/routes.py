@@ -90,6 +90,7 @@ def next_arrival():
                 best = (eta_unix, trip_id, route_id)
 
     if best is None:
+        logger.info("No results found", extra={"stop_code": stop_code, "bus_number": bus_number})
         return jsonify({
             "stop_code": stop_code,
             "stop_id": stop_id,
@@ -99,6 +100,7 @@ def next_arrival():
         })
 
     eta_unix, trip_id, route_id = best
+    logger.info("Next arrive was found", extra={"stop_code": stop_code, "bus_number": bus_number, "eta_unix": eta_unix, "trip_id": trip_id, "route_id": route_id})
     return jsonify({
         "stop_code": stop_code,
         "stop_id": stop_id,
