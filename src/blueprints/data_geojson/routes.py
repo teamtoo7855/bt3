@@ -54,32 +54,39 @@ def vehicles_geojson():
         "type": "FeatureCollection",
         "features": features
     })
-
-
-
-
+    
 @data_geojson_bp.route("/stops.geojson")
 def stops_geojson():
-    with open("./data/stops.txt", "r", encoding="utf-8-sig", newline="") as f:
-        features = []
-        for row in csv.DictReader(f):
-            features.append({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        (row.get("stop_lon") or "").strip(),
-                        (row.get("stop_lat") or "").strip(),
-                    ]
-                },
-                "properties": {
-                    "stop_id": (row.get("stop_id") or "").strip(),
-                    "stop_code": (row.get("stop_code") or "").strip(),
-                    "stop_name": (row.get("stop_name") or "").strip(),
-                }
-            })
-        #send features to json
-        return jsonify({
-            "type": "FeatureCollection",
-            "features": features
-        })
+    with app.app_context():
+        Stop = Models["stops"].__table__
+
+        stmt = db.select(
+            Stop.c.stop_id,
+            Stop.c.stop_code,
+            Stop.c.stop_name,
+            Stop.c.stop_lat,
+            Stop.c.stop_lon
+        )
+
+        stops = db.session.execute(stmt).all()
+
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [stop.stop_lon, stop.stop_lat]
+            },
+            "properties": {
+                "stop_id":   stop.stop_id,
+                "stop_code": stop.stop_code,
+                "stop_name": stop.stop_name
+            }
+        }
+        for stop in stops
+    ]
+
+    return jsonify({
+        "type": "FeatureCollection",
+        "features": features
+    })
