@@ -214,6 +214,38 @@ def stop_code_shapes(stop_code):
         "features": features
     })
 
+@api_bp.get('/trips/<trip_id>/shape')
+def get_trip_shape(trip_id):
+    with app.app_context():
+        Shape = Models["shapes"].__table__
+        Trip  = Models["trips"].__table__
+
+        stmt = (
+            dba.select(
+                Shape.c.shape_pt_lat,
+                Shape.c.shape_pt_lon,
+                Shape.c.shape_pt_sequence
+            )
+            .join(Trip, Shape.c.shape_id == Trip.c.shape_id)
+            .where(Trip.c.trip_id == trip_id)
+            .order_by(Shape.c.shape_pt_sequence)
+        )
+
+        rows = dba.session.execute(stmt).all()
+
+    coordinates = [[row.shape_pt_lon, row.shape_pt_lat] for row in rows]
+
+    return jsonify({
+        "type": "Feature",
+        "geometry": {
+            "type": "LineString",
+            "coordinates": coordinates
+        },
+        "properties": {
+            "trip_id": trip_id
+        }
+    })
+
 
 @api_bp.route('/profile/stops', methods=['GET'])
 @require_jwt
