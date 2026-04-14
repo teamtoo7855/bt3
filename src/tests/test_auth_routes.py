@@ -127,7 +127,7 @@ def test_login_invalid_email_or_password_returns_page(mock_post, client):
 
 
 def test_logout_redirects_to_login(client):
-    response = client.get("/logout", follow_redirects=False)
+    response = client.post("/logout", follow_redirects=False)
 
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
