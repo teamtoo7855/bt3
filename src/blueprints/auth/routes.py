@@ -157,6 +157,7 @@ def logout():
     session.clear()
     #session.pop('token', None)
     #session.pop('demo', None)
+    logger.info("logged out successfully", extra={"email":session["email"]})
     flash("Logged out", category="Success")
     return redirect(url_for('auth.login'))
 
