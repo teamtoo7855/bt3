@@ -6,26 +6,26 @@ from tools.fetch_gtfs_static import fetch_gtfs_static
 from tools.fetch_types import fetch_types
 
 
-# get bus type data if not already existing
-try:
-    with open("types.pkl", "rb") as f:
-        processed = pickle.load(f)
-        print("types.pkl loaded")
-except Exception:
-    print("types.pkl not found, fetching")
-    fetch_types()
+# # get bus type data if not already existing
+# try:
+#     with open("types.pkl", "rb") as f:
+#         processed = pickle.load(f)
+#         print("types.pkl loaded")
+# except Exception:
+#     print("types.pkl not found, fetching")
+#     fetch_types()
 
 
-# get GTFS static data if not already existing
-data_dir = "./data"
-try:
-    file_count = len(os.listdir(data_dir))
-    if file_count != 16:
-        raise Exception
-    print("GTFS static data found")
-except Exception:
-    print("GTFS static data not found, fetching")
-    fetch_gtfs_static()
+# # get GTFS static data if not already existing
+# data_dir = "./data"
+# try:
+#     file_count = len(os.listdir(data_dir))
+#     if file_count != 16:
+#         raise Exception
+#     print("GTFS static data found")
+# except Exception:
+#     print("GTFS static data not found, fetching")
+#     fetch_gtfs_static()
 
 
 def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
