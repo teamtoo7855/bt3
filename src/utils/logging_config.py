@@ -11,3 +11,7 @@ class JSONFormatter(logging.Formatter):
         }
         return json.dumps(log_entry)
 
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+logging.root.addHandler(handler)
+logging.root.setLevel(logging.INFO)
