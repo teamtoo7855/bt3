@@ -23,7 +23,6 @@ def profile():
         return redirect(url_for('auth.login'))
     if request.method == "GET":
         profile_data = get_profile_data(current_user) or {}
-        print(profile_data)
         return render_template('profile.html', profile_data=profile_data, error=None)
     '''
     doc_ref = db.collection('profile').document(uid)
