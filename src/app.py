@@ -11,6 +11,7 @@ from blueprints.data_geojson import data_geojson_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 
+
 # Register blueprints
 app.register_blueprint(dashboard_bp)  # Handles root route /
 app.register_blueprint(auth_bp)
@@ -19,6 +20,4 @@ app.register_blueprint(api_bp)
 app.register_blueprint(data_geojson_bp)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
-    #app.run(debug=True, port=5000)
-
+    app.run(debug=True, port=8080)

@@ -98,11 +98,11 @@ def profile():
 
     profile_data["email"] = email
     profile_data["prefs"] = prefs
-    profile_data["created"] = created
+    # profile_data["created"] = created
 
 
-    error = validate_profile_data("", "", email, favorite_types,
-                      favorite_routes, favorite_stops, theme, alerts, created)
+    error = validate_profile_data(email, favorite_types,
+                      favorite_routes, favorite_stops, theme, alerts)
     if error:
         flash(error, category="Error")
         return render_template("profile.html", profile_data=profile_data, error=error)

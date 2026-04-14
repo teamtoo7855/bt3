@@ -107,14 +107,14 @@ def login():
         flash("Bad email or password.", category="Error")
         return render_template('login.html', error=error)
     try:
-        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={Config.FIREBASE_APIKEY}"
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={Config.FIREBASE_API_KEY}"
         payload = {"email": email, "password": password, "returnSecureToken": True}
         res = requests.post(FIREBASE_LOGIN, json=payload)
         if res.status_code == 200:
             token_data = res.json()
             uid = token_data.get("localId")
             session["logged_in"] = True
-            session["username"] = uid
+            session["uid"] = uid
             session["email"] = email
             session["jwt_token"] = token_data.get("idToken")
             return redirect(url_for('dashboard.home'))
