@@ -14,21 +14,26 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: "Set up Python"
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
+          python-version-file: ".python-version"
 
       - name: Install uv
-        run: pip install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          # Install a specific version of uv.
+          version: "0.11.6"
 
-      - name: Install dependencies
-        run: uv pip install --system .
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
 
-      - name: Install test tools
-        run: uv pip install --system pytest pytest-cov
+      - name: Enable caching
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
 
       - name: Run tests
         env:
           PYTHONPATH: src:.
-        run: pytest src/tests --cov=src --cov-report=term-missing
+        run: uv run pytest src/tests --cov=src --cov-report=term-missing
