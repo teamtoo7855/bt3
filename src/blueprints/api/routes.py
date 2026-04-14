@@ -15,8 +15,6 @@ limiter = Limiter(get_remote_address, app=app)
 from models import Models, get_stop_id_from_stop_code, get_route_id_from_short_name
 from models import db as dba
 
-GTFS_TRIP_URL = Config.GTFS_TRIP_URL
-
 #profile api
 @api_bp.get("/profile")
 @require_jwt
@@ -41,7 +39,7 @@ def next_arrival():
     if not route_id_needed:
         return jsonify({"error": f"unknown route_short_name: {bus_number}"}), 400
 
-    resp = requests.get(GTFS_TRIP_URL, timeout=10)
+    resp = requests.get(Config.GTFS_TRIP_URL, timeout=10)
     resp.raise_for_status()
 
     feed = gtfs_realtime_pb2.FeedMessage()
