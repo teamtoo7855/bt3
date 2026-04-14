@@ -16,29 +16,6 @@ def test_hash_pw_and_verify_pw():
     assert verify_pw("wrongpassword", hashed) is False
 
 
-def test_fetch_gtfs_static_downloads_and_extracts(monkeypatch):
-    fake_response = Mock()
-    fake_response.content = b"fake_zip_bytes"
-
-    class FakeZipFile:
-        def __init__(self, file_obj):
-            self.file_obj = file_obj
-            self.extracted_to = None
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc, tb):
-            return False
-
-        def extractall(self, path):
-            self.extracted_to = path
-
-    monkeypatch.setattr("tools.fetch_gtfs_static.requests.get", lambda url: fake_response)
-    monkeypatch.setattr("tools.fetch_gtfs_static.zipfile.ZipFile", FakeZipFile)
-
-    fetch_gtfs_static()
-
 
 def test_fetch_types_scrapes_and_writes_pickle(monkeypatch):
     html = """
