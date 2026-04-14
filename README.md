@@ -110,15 +110,17 @@ Base URL:
 http://localhost:8080
 ```
 
-| Method | Endpoint                       | Description                           | Parameters                                  | Auth Required |
-| ------ | ------------------------------ | ------------------------------------- | ------------------------------------------- | ------------- |
-| GET    | `/api/next_arrival`            | Get next bus arrival time for a stop  | `stop_id`, `bus_number` (query)             | No            |
-| GET    | `/api/shape`                   | Get route shape (GeoJSON LineString)  | `stop_id` OR `trip_id`, `direction` (query) | No            |
-| GET    | `/api/profile/stops`           | Get all favorite stops                | None                                        | Yes (JWT)     |
-| GET    | `/api/profile/stops/<fav_idx>` | Get a specific favorite stop by index | `fav_idx` (path)                            | Yes (JWT)     |
-| POST   | `/api/profile/stops`           | Add a favorite stop                   | `stop_number` (form)                        | Yes (JWT)     |
-| PUT    | `/api/profile/stops/<fav_idx>` | Update a favorite stop                | `stop_number` (form)                        | Yes (JWT)     |
-| DELETE | `/api/profile/stops/<fav_idx>` | Delete a favorite stop                | `fav_idx` (path)                            | Yes (JWT)     |
+| Method | Endpoint                        | Description                                        | Parameters                       | Auth Required |
+| ------ | ------------------------------- | -------------------------------------------------- | -------------------------------- | ------------- |
+| GET    | `/api/next_arrival`             | Get next bus arrival time for a stop               | `stop_id`, `bus_number` (query)  | No            |
+| GET    | `/stop_code/<stop_code>/shapes'`| Get route shape from stop code (GeoJSON LineString)| `stop_code` (path)               | No            |
+| GET    | `/stop_code/<stop_code>`        | Get routes from stop code                          | `stop_code` (path)               | No            |
+| GET    | `/trips/<trip_id>/shape`        | Get route shape from trip id (GeoJSON LineString)  | `trip_id` (path)                 | No            |
+| GET    | `/api/profile/stops`            | Get all favorite stops                             | None                             | Yes (JWT)     |
+| GET    | `/api/profile/stops/<fav_idx>`  | Get a specific favorite stop by index              | `fav_idx` (path)                 | Yes (JWT)     |
+| POST   | `/api/profile/stops`            | Add a favorite stop                                | `stop_number` (form)             | Yes (JWT)     |
+| PUT    | `/api/profile/stops/<fav_idx>`  | Update a favorite stop                             | `stop_number` (form)             | Yes (JWT)     |
+| DELETE | `/api/profile/stops/<fav_idx>`  | Delete a favorite stop                             | `fav_idx` (path)                 | Yes (JWT)     |
 
 
 ## Features

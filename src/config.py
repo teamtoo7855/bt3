@@ -26,3 +26,6 @@ class Config:
         "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
         f"?key={WEB_API_KEY}"
     )
+
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///static.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False

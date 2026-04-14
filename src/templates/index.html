@@ -185,9 +185,10 @@ map.on("load", () => {
     closeButton: false,
     closeOnClick: false
   });
+
   //create a timeout
   let hoverTimeout
-  map.addInteraction('places-mouseenter-interaction', {
+  map.addInteraction('bus-mouseenter-interaction', {
     type: 'mouseenter',
     // if bus points on map are selected
     target: { layerId: 'bus-points' },
@@ -204,19 +205,21 @@ map.on("load", () => {
         const description = e.feature.properties.vehicle_name;
         // popup.setLngLat(coordinates).setHTML(description).addTo(map);
         // get link to be requested for bus routes
-        const url = `/api/shape?trip_id=${e.feature.properties.trip_id}&direction=${e.feature.properties.direction_id}`;
+        const url = `/api/trips/${e.feature.properties.trip_id}/shape`;
         //if hover route has already been created
         if (map.getSource("hover-route")){
-        //grab info from the url
+          //grab info from the url
           map.getSource("hover-route").setData(url);
         }
         //otherwise add hover route of geojson type with the previous included url
         else {
           map.addSource("hover-route", {
-          type: "geojson",
-          data: url
+            type: "geojson",
+            data: url
           });
-
+          const description = e.feature.properties.vehicle_name;
+          // popup.setLngLat(coordinates).setHTML(description).addTo(map);
+          
           //add line layers with specified colours
           map.addLayer({
             id: "hover-layer",
@@ -237,11 +240,10 @@ map.on("load", () => {
         //add a time delay before routes are registeredd
       }, 50);
     }
-
   });
 
   // clear popup when mouse no longer hovering
-  map.addInteraction('places-mouseleave-interaction', {
+  map.addInteraction('bus-mouseleave-interaction', {
       type: 'mouseleave',
       target: { layerId: 'bus-points' },
       handler: () => {
@@ -258,6 +260,7 @@ map.on("load", () => {
   // show popup on click, from https://docs.mapbox.com/mapbox-gl-js/example/standard-interactions/
 
   let selectedPlace;
+  let activeShapeIds = [];
 
   const card = document.getElementById('properties');
   const showCard = (feature) => {
@@ -272,50 +275,79 @@ map.on("load", () => {
   };
 
   map.addInteraction('stop-click', {
-  type: 'click',
-  target: {layerId: 'stop-points'},
-  handler: ({ feature }) => {
+    type: 'click',
+    target: { layerId: 'stop-points' },
+    handler: async ({ feature }) => {
       if (selectedPlace) {
-          map.setFeatureState(selectedPlace, { select: false });
-          map.removeLayer('sel-route')
-          map.removeSource('route')
+        map.setFeatureState(selectedPlace, { select: false });
+
+        // Remove all active shape layers and sources
+        activeShapeIds.forEach(shapeId => {
+          map.removeLayer(`shape-${shapeId}`);
+          map.removeSource(`shape-${shapeId}`);
+        });
+        activeShapeIds = [];
       }
+
       selectedPlace = feature;
       map.setFeatureState(feature, { select: true });
       showCard(feature);
 
-      map.addSource("route", {
-        type: "geojson",
-        data: `/api/shape?stop_id=${feature.properties.stop_id}`
-      });
+      const response = await fetch(`/api/stop_code/${feature.properties.stop_code}/shapes`);
+      const geojson = await response.json();
 
-      map.addLayer({
-        id: "sel-route",
-        type: "line",
-        source: "route",
-        layout: {
+      const colours = [
+        '#e6194b', '#3cb44b', '#4363d8', '#f58231',
+        '#911eb4', '#42d4f4', '#f032e6', '#bfef45',
+        '#fabed4', '#469990', '#dcbeff', '#9A6324'
+      ];
+
+      geojson.features.forEach((feature, index) => {
+        const shapeId = feature.properties.shape_id;
+        const colour = colours[index % colours.length];
+
+        map.addSource(`shape-${shapeId}`, {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [feature] }
+        });
+
+        map.addLayer({
+          id: `shape-${shapeId}`,
+          type: 'line',
+          source: `shape-${shapeId}`,
+          layout: {
             'line-join': 'round',
             'line-cap': 'round'
-        },
-        paint: {
-            'line-color': '#888',
-            'line-width': 8
-        }
+          },
+          paint: {
+            'line-color': colour,
+            'line-width': 8,
+            'line-opacity': 0.8
+          }
+        });
+
+        activeShapeIds.push(shapeId);
       });
-  }
+    }
   });
 
   map.addInteraction('map-click', {
     type: 'click',
     handler: () => {
-        if (selectedPlace) {
-            map.setFeatureState(selectedPlace, { select: false });
-            map.removeLayer('sel-route')
-            map.removeSource('route')
-            selectedPlace = null;
-        }
-        card.style.display = 'none';
-        return false;
+      if (selectedPlace) {
+        map.setFeatureState(selectedPlace, { select: false });
+
+        // Remove all shape layers and sources
+        activeShapeIds.forEach(shapeId => {
+          map.removeLayer(`shape-${shapeId}`);
+          map.removeSource(`shape-${shapeId}`);
+        });
+        activeShapeIds = [];
+
+        selectedPlace = null;
+      }
+      card.style.display = 'none';
+      return false;
     }
   });
 

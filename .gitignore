@@ -220,7 +220,6 @@ __marimo__/
 .vscode/
 
 data/
-src/keys.py
 types.pkl
 serviceAccountKey.json
 .postman/
