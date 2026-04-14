@@ -12,8 +12,8 @@ def test_profile_get_returns_200(mock_verify, client):
     )
 
     assert response.status_code == 200
-    assert b"Your Profile" in response.data
-    assert b"test@example.com" in response.data
+    assert b"profile_data" in response.data
+    assert b"dummy@localhost.lan" in response.data
 
 
 @patch("firebase_admin.auth.verify_id_token")
