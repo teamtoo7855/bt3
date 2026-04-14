@@ -40,14 +40,17 @@ def next_arrival():
     bus_number = request.args.get("bus_number", "").strip()
 
     if not stop_code or not bus_number:
+        logger.warning("missing stop code or bus number", extra={"stop_code": stop_code, "bus_number": bus_number})
         return jsonify({"error": "stop_id and bus_number are required"}), 400
 
     stop_id = STOPCODE_TO_STOPID.get(stop_code)
     if not stop_id:
+        logger.warning("invalid stop code", extra={"stop_code": stop_code})
         return jsonify({"error": f"unknown stop_code: {stop_code}"}), 400
 
     route_id_needed = SHORT_TO_ROUTEID.get(bus_number)
     if not route_id_needed:
+        logger.warning("invalid bus number", extra={"bus_number": bus_number})
         return jsonify({"error": f"unknown route_short_name: {bus_number}"}), 400
 
     resp = requests.get(GTFS_TRIP_URL, timeout=10)
