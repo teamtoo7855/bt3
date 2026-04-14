@@ -145,6 +145,7 @@ def get_shape():
                     for i in shape_pts:
                         i.pop(0)
                     # send features to json
+                    logger.info("bus route mapped")
                     return jsonify(
                         {
                             "type": "FeatureCollection",
