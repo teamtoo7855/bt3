@@ -1,14 +1,11 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import MagicMock
 
+# create test fixture with monkeypatch to mock firebase auth
 @pytest.fixture
-def mock_firebase_auth(mocker):
-    mock_verify = mocker.patch(
-        'firebase_admin.auth.verify_id_token'
-    )
-    mock_verify.return_value = {
-        "uid": "dummy"
-    }
+def mock_firebase_auth(monkeypatch):
+    mock_verify = MagicMock(return_value={"uid": "dummy"})
+    monkeypatch.setattr("firebase_admin.auth.verify_id_token", mock_verify)
     return mock_verify
 
 @patch("firebase_admin.auth.verify_id_token")
