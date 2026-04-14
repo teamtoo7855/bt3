@@ -1,5 +1,15 @@
+import pytest
 from unittest.mock import patch
 
+@pytest.fixture
+def mock_firebase_auth(mocker):
+    mock_verify = mocker.patch(
+        'firebase_admin.auth.verify_id_token'
+    )
+    mock_verify.return_value = {
+        "uid": "dummy"
+    }
+    return mock_verify
 
 @patch("firebase_admin.auth.verify_id_token")
 def test_profile_get_returns_200(mock_verify, client):
