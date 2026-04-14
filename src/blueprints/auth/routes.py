@@ -114,6 +114,7 @@ def login():
     password = request.form.get('password') or ""
 
     if not validate_email(email) or not validate_password(password):
+        logger.warning("Bad email or password", extra={"email":email})
         flash("Bad email or password.", category="Error")
         return render_template('login.html', error=error)
     try:
@@ -127,13 +128,16 @@ def login():
             session["username"] = uid
             session["email"] = email
             session["jwt_token"] = token_data.get("idToken")
+            logger.info("logged in successfully", extra={"email":email})
             return redirect(url_for('dashboard.home'))
         error_data = res.json().get("error", {})
         error_msg = error_data.get("message", "Invalid credentials")
         if "INVALID_LOGIN_CREDENTIALS" in error_msg:
             error_msg = "invalid email or pass"
+        logger.info(error_msg, extra={"email":email})
         return render_template('login.html', error=error_msg)
     except requests.RequestException:
+        logger.error("Unable to authenticate")
         return render_template("login.html", error="Authentication service unavailable")
     '''
     if res.status_code == 200:
