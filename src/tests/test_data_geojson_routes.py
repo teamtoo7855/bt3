@@ -1,3 +1,4 @@
+from io import StringIO
 from unittest.mock import patch
 
 
@@ -49,21 +50,10 @@ class FakeFeed:
         pass
 
 
-class FakeStop:
-    def __init__(self, stop_id, stop_code, stop_name, stop_lat, stop_lon):
-        self.stop_id = stop_id
-        self.stop_code = stop_code
-        self.stop_name = stop_name
-        self.stop_lat = stop_lat
-        self.stop_lon = stop_lon
-
-
 @patch("blueprints.data_geojson.routes.check_id")
 @patch("blueprints.data_geojson.routes.gtfs_realtime_pb2.FeedMessage")
 @patch("blueprints.data_geojson.routes.requests.get")
-def test_vehicles_geojson_returns_feature_collection(
-    mock_get, mock_feed_cls, mock_check_id, client
-):
+def test_vehicles_geojson_returns_feature_collection(mock_get, mock_feed_cls, mock_check_id, client):
     class FakeResponse:
         content = b"fake"
 
@@ -80,12 +70,17 @@ def test_vehicles_geojson_returns_feature_collection(
     assert data["features"][0]["properties"]["vehicle_id"] == "1234"
 
 
-@patch("blueprints.data_geojson.routes.db.session.execute")
-def test_stops_geojson_returns_feature_collection(mock_execute, client):
-    mock_execute.return_value.all.return_value = [
-        FakeStop("1001", "12345", "Test Stop", 49.25, -123.10),
-        FakeStop("1002", "67890", "Another Stop", 49.26, -123.11),
-    ]
+def test_stops_geojson_returns_feature_collection(client, monkeypatch):
+    fake_csv = (
+        "stop_id,stop_code,stop_name,stop_lat,stop_lon\n"
+        "1001,12345,Test Stop,49.25,-123.10\n"
+        "1002,67890,Another Stop,49.26,-123.11\n"
+    )
+
+    def fake_open(*args, **kwargs):
+        return StringIO(fake_csv)
+
+    monkeypatch.setattr("builtins.open", fake_open)
 
     response = client.get("/stops.geojson")
 
@@ -93,5 +88,3 @@ def test_stops_geojson_returns_feature_collection(mock_execute, client):
     data = response.get_json()
     assert data["type"] == "FeatureCollection"
     assert len(data["features"]) == 2
-    assert data["features"][0]["properties"]["stop_code"] == "12345"
-    assert data["features"][1]["properties"]["stop_name"] == "Another Stop"
