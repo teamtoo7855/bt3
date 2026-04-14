@@ -28,30 +28,30 @@ from tools.fetch_types import fetch_types
 #     fetch_gtfs_static()
 
 
-def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
-    mapping: dict[str, str] = {}
-    with open(stops_path, "r", encoding="utf-8-sig", newline="") as f:
-        for row in csv.DictReader(f):
-            sid = (row.get("stop_id") or "").strip()
-            code = (row.get("stop_code") or "").strip()
-            if sid and code:
-                mapping[code] = sid
-    return mapping
+# def load_stopcode_to_stopid(stops_path: str) -> dict[str, str]:
+#     mapping: dict[str, str] = {}
+#     with open(stops_path, "r", encoding="utf-8-sig", newline="") as f:
+#         for row in csv.DictReader(f):
+#             sid = (row.get("stop_id") or "").strip()
+#             code = (row.get("stop_code") or "").strip()
+#             if sid and code:
+#                 mapping[code] = sid
+#     return mapping
 
 
-def load_short_to_routeid(routes_path: str) -> dict[str, str]:
-    mapping: dict[str, str] = {}
-    with open(routes_path, "r", encoding="utf-8-sig", newline="") as f:
-        for row in csv.DictReader(f):
-            rid = (row.get("route_id") or "").strip()
-            short = (row.get("route_short_name") or "").strip()
-            if rid and short and short not in mapping:
-                mapping[short] = rid
-    return mapping
+# def load_short_to_routeid(routes_path: str) -> dict[str, str]:
+#     mapping: dict[str, str] = {}
+#     with open(routes_path, "r", encoding="utf-8-sig", newline="") as f:
+#         for row in csv.DictReader(f):
+#             rid = (row.get("route_id") or "").strip()
+#             short = (row.get("route_short_name") or "").strip()
+#             if rid and short and short not in mapping:
+#                 mapping[short] = rid
+#     return mapping
 
 
-STOPCODE_TO_STOPID = load_stopcode_to_stopid("./data/stops.txt")
-SHORT_TO_ROUTEID = load_short_to_routeid("./data/routes.txt")
+# STOPCODE_TO_STOPID = load_stopcode_to_stopid("./data/stops.txt")
+# SHORT_TO_ROUTEID = load_short_to_routeid("./data/routes.txt")
 
 
 def check_id(bus_id: int):
