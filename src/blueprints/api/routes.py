@@ -1,20 +1,16 @@
 from . import api_bp
-from flask import Flask, jsonify, render_template, request, flash, session, redirect, url_for
+from flask import jsonify, request
 from google.transit import gtfs_realtime_pb2
+from flask import current_app as app
 import requests
 import csv
 import time
-from firebase_admin import credentials, firestore, auth
 from firebase import db
-import re
-import json
-from utils.profile import get_profile_data, get_profile_doc_ref, set_profile
-from utils.validation import normalize_profile_data, validate_profile_data
+from utils.profile import get_profile_data
 from config import Config
 from decorators.auth import require_jwt
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask import current_app as app
 limiter = Limiter(get_remote_address, app=app)
 from models import Models, get_stop_id_from_stop_code, get_route_id_from_short_name
 from models import db as dba
@@ -66,7 +62,6 @@ def next_arrival():
         trip_id = tu.trip.trip_id if tu.trip.HasField("trip_id") else None
 
         for stu in tu.stop_time_update:
-            print(stu.stop_id)
             if stu.stop_id != stop_id:
                 continue
 
