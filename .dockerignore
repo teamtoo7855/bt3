@@ -1,3 +1,9 @@
 ../.venv/
 .__pycache__/
 .git/
+./types.pkl
+./keys.py
+./serviceAccountKey.json
+./.postman/
+./postman/
+./data/
