@@ -12,6 +12,9 @@ from decorators.auth import require_jwt
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 limiter = Limiter(get_remote_address, app=app)
+import logging
+logger = logging.getLogger(__name__)
+GTFS_TRIP_URL = Config.GTFS_TRIP_URL
 from models import Models, get_stop_id_from_stop_code, get_route_id_from_short_name
 from models import db as dba
 
@@ -29,14 +32,17 @@ def next_arrival():
     bus_number = request.args.get("bus_number", "").strip()
 
     if not stop_code or not bus_number:
+        logger.warning("missing stop code or bus number", extra={"stop_code": stop_code, "bus_number": bus_number})
         return jsonify({"error": "stop_id and bus_number are required"}), 400
 
     stop_id = get_stop_id_from_stop_code(stop_code)
     if not stop_id:
+        logger.warning("invalid stop code", extra={"stop_code": stop_code})
         return jsonify({"error": f"unknown stop_code: {stop_code}"}), 400
 
     route_id_needed = get_route_id_from_short_name(bus_number)
     if not route_id_needed:
+        logger.warning("invalid bus number", extra={"bus_number": bus_number})
         return jsonify({"error": f"unknown route_short_name: {bus_number}"}), 400
 
     resp = requests.get(Config.GTFS_TRIP_URL, timeout=10)
@@ -76,6 +82,7 @@ def next_arrival():
                 best = (eta_unix, trip_id, route_id)
 
     if best is None:
+        logger.info("No results found", extra={"stop_code": stop_code, "bus_number": bus_number})
         return jsonify({
             "stop_code": stop_code,
             "stop_id": stop_id,
@@ -85,6 +92,7 @@ def next_arrival():
         })
 
     eta_unix, trip_id, route_id = best
+    logger.info("Next arrive was found", extra={"stop_code": stop_code, "bus_number": bus_number, "eta_unix": eta_unix, "trip_id": trip_id, "route_id": route_id})
     return jsonify({
         "stop_code": stop_code,
         "stop_id": stop_id,
@@ -274,6 +282,7 @@ def stop_code_info(stop_code):
 @require_jwt
 def api_profile_stops_get_all(uid: str):
     stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
+    logger.info("favorite stops",extra={"stops":stops})
     return jsonify(stops)
     #uid = validate_jwt()
     #if uid:
@@ -287,8 +296,10 @@ def api_profile_stops_get_one(fav_idx, uid: str):
     stops = db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops']
     try:
         stop_n = stops[int(fav_idx)]
+        logger.info("favorite stop number",extra={"stop_n":stop_n})
         return jsonify(stop_n)
     except:
+        logger.error("no stop at index",extra={"stop_n":stop_n})
         return jsonify({"error": "No stop at index"}), 400
     #uid = validate_jwt()
     #if uid:
@@ -305,6 +316,7 @@ def api_profile_stops_get_one(fav_idx, uid: str):
 def api_profile_stops_post(uid: str):
     stop_number = request.form['stop_number']
     if not stop_number:
+        logger.warning("invalid stop number", extra={"stop_number":stop_number})
         return jsonify({"error": "Invalid stop number"}), 400
     doc_ref = db.collection('profile').document(uid)
     doc = doc_ref.get()
@@ -314,12 +326,14 @@ def api_profile_stops_post(uid: str):
         stops.append(stop_number)
     else:
         if stop_number in stops:
+            logger.info("valid stop number",extra={"stop_number":stop_number})
             return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
         if not stops[0]:
             stops[0] = stop_number
         else:
             stops.append(stop_number)
     doc_ref.update({"prefs": {"favorite_stops": stops}})
+    logger.info("favorite stop number",extra={"stop_number":stop_number})
     return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
 
     '''
@@ -358,15 +372,19 @@ def api_profile_stops_put_del(fav_idx, uid : str):
             stop_number = request.form['stop_number']
             stops[int(fav_idx)] = stop_number;
             doc_ref.update({"prefs": {"favorite_stops": stops}})
+            logger.info("stop number put", extra={"stop_number":stop_number})
             return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
         except:
+            logger.error("no stop at index",extra={"index_number":int(fav_idx)})
             return jsonify({"error": "No stop at index"}), 400
     if request.method == 'DELETE':
         try:
             stops.pop(int(fav_idx))
             doc_ref.update({"prefs": {"favorite_stops": stops}})
+            logger.info("stop deleted", extra={"stop_number":stops[int(fav_idx)]})
             return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
         except:
+            logger.error("no stop at index",extra={"index_number": int(fav_idx)})
             return jsonify({"error": "No stop at index"}), 400
 
     '''

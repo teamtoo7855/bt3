@@ -8,6 +8,10 @@ import time
 from config import Config
 from utils.validation import validate_email, validate_password, validate_favorite_stops
 from decorators.auth import require_jwt
+import logging
+logger = logging.getLogger(__name__)
+
+
 FIREBASE_LOGIN = Config.FIREBASE_LOGIN
 # -----------------------------
 # AUTH: SIGNUP
@@ -21,6 +25,7 @@ def signup():
     #if request.method == "POST":
     email = (request.form.get('email') or "").strip()
     if not validate_email(email):
+        logger.warning("Entered email invalid", extra={"email":email})
         flash("Please enter a valid email.", category="Error")
         return render_template('signup.html', error=error)
 
@@ -28,10 +33,12 @@ def signup():
     password_confirm = request.form.get('password_confirm') or ""
 
     if not validate_password(password):
+        logger.warning("Entered password invalid", extra={"password":password})
         flash("Password needs to be at least 8 characters long.", category="Error")
         return render_template('signup.html', error=error)
 
     if password != password_confirm:
+        logger.warning("Passwords don't match", extra={"password":password})
         flash("Passwords don't match.", category="Error")
         return render_template('signup.html', error=error)
 
@@ -42,6 +49,7 @@ def signup():
     alerts = (request.form.get("alerts") or "").strip()  # "on"/"off"/""
     favorite_stop = (request.form.get("favorite_stop") or "").strip()
     if not validate_favorite_stops(favorite_stop):
+        logger.warning(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", extra={"favorite_stop":favorite_stop})
         flash(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", category="Error")
         return render_template('signup.html', error=error)
     '''
@@ -75,9 +83,11 @@ def signup():
         db.collection("profile").document(user.uid).set(user_data)
         #doc_ref = db.collection('profile').document(user.uid)
         #doc_ref.set(user_data)
+        logger.info("Signed up successfully. Please log in.", extra={"email":email})
         flash("Signed up successfully. Please log in.", category="Success")
         return redirect(url_for('auth.login'))
     except:
+        logger.error("Error creating account. Email may already exits", extra={"email": email})
         flash("Error creating account. Email may already exist.", category="Error")
         return render_template('signup.html', error=error)
 
@@ -104,6 +114,7 @@ def login():
     password = request.form.get('password') or ""
 
     if not validate_email(email) or not validate_password(password):
+        logger.warning("Bad email or password", extra={"email":email})
         flash("Bad email or password.", category="Error")
         return render_template('login.html', error=error)
     try:
@@ -117,13 +128,16 @@ def login():
             session["uid"] = uid
             session["email"] = email
             session["jwt_token"] = token_data.get("idToken")
+            logger.info("logged in successfully", extra={"email":email})
             return redirect(url_for('dashboard.home'))
         error_data = res.json().get("error", {})
         error_msg = error_data.get("message", "Invalid credentials")
         if "INVALID_LOGIN_CREDENTIALS" in error_msg:
             error_msg = "invalid email or pass"
+        logger.info(error_msg, extra={"email":email})
         return render_template('login.html', error=error_msg)
     except requests.RequestException:
+        logger.error("Unable to authenticate")
         return render_template("login.html", error="Authentication service unavailable")
     '''
     if res.status_code == 200:
@@ -143,6 +157,7 @@ def logout():
     session.clear()
     #session.pop('token', None)
     #session.pop('demo', None)
+    logger.info("logged out successfully")
     response = make_response(redirect(url_for('auth.login')))
     response.delete_cookie('session')
     
@@ -154,7 +169,7 @@ def logout():
 def error():
     status_code = request.args.get("status_code", 500)
     error_message = request.args.get("error_message", "Please try again.")
-
+    logger.info(error_message, extra={"status_code":status_code})
     return render_template(
         "error.html",
         status_code=status_code,
