@@ -258,15 +258,19 @@ def api_profile_stops_put_del(fav_idx, uid : str):
             stop_number = request.form['stop_number']
             stops[int(fav_idx)] = stop_number;
             doc_ref.update({"prefs": {"favorite_stops": stops}})
+            logger.info("stop number put", extra={"stop_number":stop_number})
             return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
         except:
+            logger.error("no stop at index",extra={"index_number":int(fav_idx)})
             return jsonify({"error": "No stop at index"}), 400
     if request.method == 'DELETE':
         try:
             stops.pop(int(fav_idx))
             doc_ref.update({"prefs": {"favorite_stops": stops}})
+            logger.info("stop deleted", extra={"stop_number":stops[int(fav_idx)]})
             return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
         except:
+            logger.error("no stop at index",extra={"index_number": int(fav_idx)})
             return jsonify({"error": "No stop at index"}), 400
 
     '''
