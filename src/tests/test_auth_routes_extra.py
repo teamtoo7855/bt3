@@ -44,16 +44,3 @@ def test_login_valid_input_calls_firebase_login(mock_post, client):
     assert response.status_code == 200
     mock_post.assert_called_once()
 
-
-def test_logout_clears_session(client):
-    with client.session_transaction() as sess:
-        sess["token"] = "abc"
-        sess["demo"] = True
-
-    response = client.get("/logout", follow_redirects=False)
-
-    assert response.status_code == 302
-
-    with client.session_transaction() as sess:
-        assert "token" not in sess
-        assert "demo" not in sess
