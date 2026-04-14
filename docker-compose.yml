@@ -9,3 +9,7 @@ services:
       - .env
     environment:
       - FLASK_DEBUG=1
+    volumes:
+      - ./instance:/app/instance
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json
+      - ./types.pkl:/app/types.pkl
