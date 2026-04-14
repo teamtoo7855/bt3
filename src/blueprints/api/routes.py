@@ -202,6 +202,7 @@ def api_profile_stops_get_one(fav_idx, uid: str):
 def api_profile_stops_post(uid: str):
     stop_number = request.form['stop_number']
     if not stop_number:
+        logger.warning("invalid stop number", extra={"stop_number":stop_number})
         return jsonify({"error": "Invalid stop number"}), 400
     doc_ref = db.collection('profile').document(uid)
     doc = doc_ref.get()
@@ -211,12 +212,14 @@ def api_profile_stops_post(uid: str):
         stops.append(stop_number)
     else:
         if stop_number in stops:
+            logger.info("valid stop number",extra={"stop_number":stop_number})
             return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
         if not stops[0]:
             stops[0] = stop_number
         else:
             stops.append(stop_number)
     doc_ref.update({"prefs": {"favorite_stops": stops}})
+    logger.info("favorite stop number",extra={"stop_number":stop_number})
     return jsonify(db.collection('profile').document(uid).get().to_dict()['prefs']['favorite_stops'])
 
     '''
