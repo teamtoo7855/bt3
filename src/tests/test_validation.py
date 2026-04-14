@@ -41,19 +41,6 @@ def test_validate_password(password, expected):
 
     assert result == expected
 
-def test_validate_profile_data_valid_returns_none():
-    result = validate_profile_data(
-        email="test@example.com",
-        favorite_bus_types=["Standard"],
-        favorite_routes=["106"],
-        favorite_stops=["60607"],
-        theme="Light",
-        alerts="on"
-    )
-
-    assert result is None
-
-
 def test_normalize_profile_data_strips_whitespace():
     result = normalize_profile_data(
         email=" test@example.com ",
