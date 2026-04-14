@@ -97,7 +97,7 @@ def signup():
 #@require_jwt
 def login():
     if request.method == 'GET':
-        return render_template('login.html')
+        return render_template('login.html', key=Config.MAPBOX_ACCESS_TOKEN)
     #error = None
 
     email = (request.form.get('email') or "").strip()
@@ -105,7 +105,7 @@ def login():
 
     if not validate_email(email) or not validate_password(password):
         flash("Bad email or password.", category="Error")
-        return render_template('login.html', error=error)
+        return render_template('login.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
     try:
         url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={Config.FIREBASE_API_KEY}"
         payload = {"email": email, "password": password, "returnSecureToken": True}
@@ -122,9 +122,9 @@ def login():
         error_msg = error_data.get("message", "Invalid credentials")
         if "INVALID_LOGIN_CREDENTIALS" in error_msg:
             error_msg = "invalid email or pass"
-        return render_template('login.html', error=error_msg)
+        return render_template('login.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error_msg)
     except requests.RequestException:
-        return render_template("login.html", error="Authentication service unavailable")
+        return render_template("login.html", key=Config.MAPBOX_ACCESS_TOKEN, error="Authentication service unavailable")
     '''
     if res.status_code == 200:
         session["demo"] = False  # exit demo if previously on
@@ -136,7 +136,7 @@ def login():
         flash("Bad email or password.", category="Error")
         '''
 
-    return render_template('login.html', error=error)
+    return render_template('login.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
