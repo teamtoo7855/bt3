@@ -8,6 +8,10 @@ import time
 from config import Config
 from utils.validation import validate_email, validate_password, validate_favorite_stops
 from decorators.auth import require_jwt
+import logging
+logger = logging.getLogger(__name__)
+
+
 FIREBASE_LOGIN = Config.FIREBASE_LOGIN
 # -----------------------------
 # AUTH: SIGNUP
