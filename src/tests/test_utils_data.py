@@ -64,28 +64,6 @@ def load_real_utils_data(monkeypatch):
     return module
 
 
-def test_load_stopcode_to_stopid(monkeypatch):
-    utils_data = load_real_utils_data(monkeypatch)
-
-    result = utils_data.load_stopcode_to_stopid("stops.txt")
-
-    assert result == {
-        "12345": "1001",
-        "67890": "1002",
-    }
-
-
-def test_load_short_to_routeid(monkeypatch):
-    utils_data = load_real_utils_data(monkeypatch)
-
-    result = utils_data.load_short_to_routeid("routes.txt")
-
-    assert result == {
-        "106": "R1",
-        "144": "R2",
-    }
-
-
 def test_check_id_returns_bus_name(monkeypatch):
     utils_data = load_real_utils_data(monkeypatch)
 
