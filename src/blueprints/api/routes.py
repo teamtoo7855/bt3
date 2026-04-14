@@ -18,6 +18,8 @@ from flask_limiter.util import get_remote_address
 from flask import current_app as app
 limiter = Limiter(get_remote_address, app=app)
 
+import logging
+logger = logging.getLogger(__name__)
 
 GTFS_TRIP_URL = Config.GTFS_TRIP_URL
 
