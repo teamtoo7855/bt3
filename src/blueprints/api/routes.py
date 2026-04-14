@@ -11,13 +11,12 @@ import json
 from utils.profile import get_profile_data, get_profile_doc_ref, set_profile
 from utils.validation import normalize_profile_data, validate_profile_data
 from config import Config
-from utils.data import STOPCODE_TO_STOPID, SHORT_TO_ROUTEID
 from decorators.auth import require_jwt
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask import current_app as app
 limiter = Limiter(get_remote_address, app=app)
-from models import Models
+from models import Models, get_stop_id_from_stop_code, get_route_id_from_short_name
 from models import db as dba
 
 GTFS_TRIP_URL = Config.GTFS_TRIP_URL
@@ -38,11 +37,11 @@ def next_arrival():
     if not stop_code or not bus_number:
         return jsonify({"error": "stop_id and bus_number are required"}), 400
 
-    stop_id = STOPCODE_TO_STOPID.get(stop_code)
+    stop_id = get_stop_id_from_stop_code(stop_code)
     if not stop_id:
         return jsonify({"error": f"unknown stop_code: {stop_code}"}), 400
 
-    route_id_needed = SHORT_TO_ROUTEID.get(bus_number)
+    route_id_needed = get_route_id_from_short_name(bus_number)
     if not route_id_needed:
         return jsonify({"error": f"unknown route_short_name: {bus_number}"}), 400
 
@@ -67,6 +66,7 @@ def next_arrival():
         trip_id = tu.trip.trip_id if tu.trip.HasField("trip_id") else None
 
         for stu in tu.stop_time_update:
+            print(stu.stop_id)
             if stu.stop_id != stop_id:
                 continue
 
