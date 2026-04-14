@@ -1,5 +1,5 @@
 from firebase import db
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, url_for, flash, make_response
 from firebase_admin import credentials, firestore, auth
 from config import Config
 from . import auth_bp
@@ -118,14 +118,14 @@ def login():
         flash("Bad email or password.", category="Error")
         return render_template('login.html', error=error)
     try:
-        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={Config.FIREBASE_APIKEY}"
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={Config.FIREBASE_API_KEY}"
         payload = {"email": email, "password": password, "returnSecureToken": True}
         res = requests.post(FIREBASE_LOGIN, json=payload)
         if res.status_code == 200:
             token_data = res.json()
             uid = token_data.get("localId")
             session["logged_in"] = True
-            session["username"] = uid
+            session["uid"] = uid
             session["email"] = email
             session["jwt_token"] = token_data.get("idToken")
             logger.info("logged in successfully", extra={"email":email})
@@ -152,14 +152,17 @@ def login():
 
     return render_template('login.html', error=error)
 
-@auth_bp.route('/logout', methods=['GET'])
+@auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     #session.pop('token', None)
     #session.pop('demo', None)
     logger.info("logged out successfully")
-    flash("Logged out", category="Success")
-    return redirect(url_for('auth.login'))
+    response = make_response(redirect(url_for('auth.login')))
+    response.delete_cookie('session')
+    
+    flash("Logged out", category="success")
+    return response
 
 
 @auth_bp.route("/error")

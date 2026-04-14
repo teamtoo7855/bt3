@@ -51,36 +51,29 @@ def validate_favorite_routes(favorite_route_id):
         '''
 
 #profile data normalization
-def normalize_profile_data(created, email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts):
+def normalize_profile_data(email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts):
     return {
         #required fields
-        "created": created.strip(),  # date created if wanted to use
         #non-required fields
         "email": email.strip(),
         "prefs": {
-            "favorite_bus_types": favorite_bus_types.strip(), #enter in a specified format
-            "favorite_routes": favorite_routes.strip(), #would be an id of sorts, can visually make it easy to understand
-            "favorite_stops": favorite_stops.strip(), #would be a number
+            "favorite_bus_types": [x.strip() for x in favorite_bus_types], #enter in a specified format
+            "favorite_routes": [x.strip() for x in favorite_routes], #would be an id of sorts, can visually make it easy to understand
+            "favorite_stops": [x.strip() for x in favorite_stops], #would be a number
             "theme": theme.strip(), #theme strings tbd
             "alerts": alerts.strip(), #a true/false that would allow alert notifs
         }
     }
 
 
-def validate_profile_data(username, password, email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts, created):
+def validate_profile_data(email, favorite_bus_types, favorite_routes, favorite_stops, theme, alerts):
 
-    if not isinstance(username, str):
-        return "username must be a string"
-    if not isinstance(password, str):
-        return "password must be a string"
     if not isinstance(email, str):
         return "email must be a string"
     if not isinstance(theme, str):
         return "theme must be a string"
     if not isinstance(alerts, str):
         return "alerts must be a string"
-    if not isinstance(created, float):
-        return "created must be a string"
 
     # lists of strings
     if not isinstance(favorite_bus_types, list):
@@ -103,13 +96,9 @@ def validate_profile_data(username, password, email, favorite_bus_types, favorit
         if not isinstance(item, str):
             return "favorite_stops must contain only strings"
 
-
-    username = username.strip()
-    password = password.strip()
     email = email.strip()
     theme = theme.strip()
     alerts = alerts.strip()
-    #created = created.strip()
 
     # normalize list values too
     favorite_bus_types = [x.strip() for x in favorite_bus_types]
@@ -119,10 +108,6 @@ def validate_profile_data(username, password, email, favorite_bus_types, favorit
 
     if email and not validate_email(email):
         return "invalid email address"
-
-    if password and not validate_password(password):
-        return "password must be at least 8 characters"
-
 
     for route in favorite_routes:
         if not validate_favorite_routes(route):
