@@ -8,10 +8,15 @@ class JSONFormatter(logging.Formatter):
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
+            "module": record.module,
+            "func": record.funcName,
+            "line": record.lineno,
         }
         return json.dumps(log_entry)
 
-handler = logging.StreamHandler()
-handler.setFormatter(JSONFormatter())
-logging.root.addHandler(handler)
-logging.root.setLevel(logging.INFO)
+def logging_setup():
+    handler = logging.StreamHandler()
+    handler.setFormatter(JSONFormatter())
+    logging.root.handlers = []
+    logging.root.addHandler(handler)
+    logging.root.setLevel(logging.INFO)
