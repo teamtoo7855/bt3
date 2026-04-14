@@ -29,9 +29,6 @@ def api_get_profile(uid : str):
     profile_data = get_profile_data(uid)
     return jsonify ({"uid": uid, "profile_data": profile_data})
 
-
-
-
 @api_bp.get("/next_arrival")
 @limiter.limit("10 per minute")
 def next_arrival():
@@ -246,6 +243,39 @@ def get_trip_shape(trip_id):
         }
     })
 
+@api_bp.get("/stop_code/<stop_code>")
+def stop_code_info(stop_code):
+    with app.app_context():
+        Stop     = Models["stops"].__table__
+        StopTime = Models["stop_times"].__table__
+        Trip     = Models["trips"].__table__
+        Route    = Models["routes"].__table__
+
+        stmt = (
+            dba.select(
+                Route.c.route_short_name,
+                Route.c.route_long_name
+            )
+            .distinct()
+            .select_from(Stop)
+            .join(StopTime, Stop.c.stop_id     == StopTime.c.stop_id)
+            .join(Trip,     StopTime.c.trip_id == Trip.c.trip_id)
+            .join(Route,    Trip.c.route_id    == Route.c.route_id)
+            .where(Stop.c.stop_code == stop_code)
+        )
+
+        rows = dba.session.execute(stmt).all()
+        
+        if not rows:
+            return jsonify({"error": f"No routes found for stop '{stop_code}'"}), 404
+
+        return jsonify([
+            {
+                "route_short_name": row.route_short_name,
+                "route_long_name" : row.route_long_name,
+            }
+            for row in rows
+        ])
 
 @api_bp.route('/profile/stops', methods=['GET'])
 @require_jwt
