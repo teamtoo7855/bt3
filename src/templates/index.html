@@ -36,7 +36,7 @@
     }
   </style>
 
-<div style="position:absolute;z-index:2;top:12px;left:12px;background:white;padding:8px 10px;border-radius:8px;font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
+<!-- <div style="position:absolute;z-index:2;top:12px;left:12px;background:white;padding:8px 10px;border-radius:8px;font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
   <button id="locBtn">Use my location</button>
   <span id="locStatus" style="margin-left:8px;font-size:12px;"></span>
 </div>
@@ -53,6 +53,41 @@
   <input id="busInput" type="text" style="width:70px;margin-left:6px;">
   <button id="etaBtn" style="margin-left:8px;">Get ETA</button>
   <span id="etaStatus" style="margin-left:8px;font-size:12px;"></span>
+</div> -->
+
+<div id="controlPanel" style="position:absolute;z-index:3;top:12px;left:12px;">
+
+  <div style="background:white;padding:6px 10px;border-radius:8px 8px 0 0;
+              font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);
+              display:flex;justify-content:space-between;align-items:center;">
+    <button id="togglePanel" style="font-size:12px;">–</button>
+  </div>
+
+  <div id="panelBody">
+
+    <div style="background:white;padding:8px 10px;font-family:sans-serif;
+                box-shadow:0 1px 6px rgba(0,0,0,0.2);">
+      <button id="locBtn">Use my location</button>
+      <span id="locStatus" style="margin-left:8px;font-size:12px;"></span>
+    </div>
+
+    <div style="background:white;padding:8px 10px;font-family:sans-serif;
+                box-shadow:0 1px 6px rgba(0,0,0,0.2);">
+      <label>Stop</label>
+      <input id="stopInput" type="text" style="width:90px;margin-left:6px;">
+      <label style="margin-left:8px;">Bus</label>
+      <input id="busInput" type="text" style="width:70px;margin-left:6px;">
+      <button id="etaBtn" style="margin-left:8px;">Get ETA</button>
+      <span id="etaStatus" style="margin-left:8px;font-size:12px;"></span>
+    </div>
+
+    <div style="background:white;padding:8px 10px;border-radius:0 0 8px 8px;
+                font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
+      <button id="profileBtn">Edit Profile</button>
+      <button id="logoutBtn" style="margin-left:8px;">Logout</button>
+    </div>
+
+  </div>
 </div>
 
 <div id="map"></div>
@@ -499,6 +534,15 @@ etaBtn.onclick = async () => {
     etaStatus.textContent = "Request failed";
     console.log(e);
   }
+};
+
+const toggleBtn = document.getElementById("togglePanel");
+const panelBody = document.getElementById("panelBody");
+
+toggleBtn.onclick = () => {
+  const isHidden = panelBody.style.display === "none";
+  panelBody.style.display = isHidden ? "block" : "none";
+  toggleBtn.textContent = isHidden ? "–" : "+";
 };
 </script>
 
