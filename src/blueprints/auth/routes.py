@@ -166,7 +166,7 @@ def logout():
 def error():
     status_code = request.args.get("status_code", 500)
     error_message = request.args.get("error_message", "Please try again.")
-
+    logger.info(error_message, extra={"status_code":status_code})
     return render_template(
         "error.html",
         status_code=status_code,
