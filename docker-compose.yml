@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - FLASK_DEBUG=1

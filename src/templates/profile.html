@@ -1,23 +1,42 @@
 {% extends "layout.html" %}
 {% block body %}
 
+<!-- Map container -->
+<div id="map"></div>
+
+<style>
+  body {
+    margin: 0;
+  }
+
+  #map {
+    filter: blur(1px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
+  }
+</style>
+
 <h2>Your Profile</h2>
 <p>Manage preferences used by the app (routes, stops, theme, alerts).</p>
 
-{% if user_data %}
+{% if profile_data %}
   <div class="divider"></div>
 
-  <p><b>Email:</b> {{ user_data.email }}</p>
+  <p><b>Email:</b> {{ profile_data.email }}</p>
 
   <form method="post" action="/profile">
     <div class="row">
       <div>
         <label>Most-used route</label>
-        <input type="text" name="favorite_route" value="{{ (user_data.prefs.favorite_routes[0] if user_data.prefs.favorite_routes else '') }}">
+        <input type="text" name="favorite_route" value="{{ (profile_data.prefs.favorite_routes[0] if profile_data.prefs.favorite_routes else '') }}">
       </div>
       <div>
         <label>Preferred bus type</label>
-        <input type="text" name="favorite_type" value="{{ (user_data.prefs.favorite_bus_types[0] if user_data.prefs.favorite_bus_types else '') }}">
+        <input type="text" name="favorite_type" value="{{ (profile_data.prefs.favorite_bus_types[0] if profile_data.prefs.favorite_bus_types else '') }}">
       </div>
     </div>
 
@@ -25,37 +44,44 @@
       <div>
         <label>Theme</label>
         <select name="theme">
-          <option value="" {% if not user_data.prefs.theme %}selected{% endif %}>Default</option>
-          <option value="Light" {% if user_data.prefs.theme == "Light" %}selected{% endif %}>Light</option>
-          <option value="Dark" {% if user_data.prefs.theme == "Dark" %}selected{% endif %}>Dark</option>
+          <option value="" {% if not profile_data.prefs.theme %}selected{% endif %}>Default</option>
+          <option value="Light" {% if profile_data.prefs.theme == "Light" %}selected{% endif %}>Light</option>
+          <option value="Dark" {% if profile_data.prefs.theme == "Dark" %}selected{% endif %}>Dark</option>
         </select>
       </div>
       <div>
         <label>Alerts</label>
         <select name="alerts">
-          <option value="" {% if user_data.prefs.alerts == "" %}selected{% endif %}>Default</option>
-          <option value="on" {% if user_data.prefs.alerts == True or user_data.prefs.alerts == "on" %}selected{% endif %}>Enabled</option>
-          <option value="off" {% if user_data.prefs.alerts == False or user_data.prefs.alerts == "off" %}selected{% endif %}>Disabled</option>
+          <option value="" {% if profile_data.prefs.alerts == "" %}selected{% endif %}>Default</option>
+          <option value="on" {% if profile_data.prefs.alerts == True or profile_data.prefs.alerts == "on" %}selected{% endif %}>Enabled</option>
+          <option value="off" {% if profile_data.prefs.alerts == False or profile_data.prefs.alerts == "off" %}selected{% endif %}>Disabled</option>
         </select>
       </div>
     </div>
 
     <label>Add favorite stop</label>
     <input type="text" name="add_stop" placeholder="e.g. 56934">
-
-    <div class="btnbar">
-      <button type="submit">Save Changes</button>
-      <a class="btn ghost" href="/">Go to Map</a>
-      <a class="btn ghost" href="/logout">Logout</a>
-    </div>
   </form>
+
+  <div class="btnbar">
+    <button type="submit" form="profile-form">Save Changes</button>
+    <a class="btn ghost" href="/">Go to Map</a>
+
+    <form action="{{ url_for('auth.logout') }}" method="POST" style="display:inline;">
+      <button type="submit" class="btn ghost">Logout</button>
+    </form>
+  </div>
 
   <div class="divider"></div>
 
-  <h3 style="margin:0 0 8px 0;">Favorite stops</h3>
-  {% if user_data.prefs.favorite_stops and user_data.prefs.favorite_stops|length > 0 %}
+  {% set prefs = profile_data.get("prefs", {}) %}
+  {% set stops = prefs.get("favorite_stops", []) %}
+
+  <h3>Favorite stops</h3>
+
+  {% if stops %}
     <ul>
-      {% for s in user_data.prefs.favorite_stops %}
+      {% for s in stops %}
         <li>{{ s }}</li>
       {% endfor %}
     </ul>
@@ -66,5 +92,41 @@
 {% else %}
   <p>No profile loaded.</p>
 {% endif %}
+
+<!-- Mapbox -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" rel="stylesheet" />
+
+<script>
+mapboxgl.accessToken = "{{key}}";
+
+const map = new mapboxgl.Map({
+  container: "map",
+  style: "mapbox://styles/mapbox/dark-v11",
+  center: [-123.115272, 49.287114],
+  zoom: 16,
+  pitch: 60,
+  bearing: -55,
+  antialias: true,
+  interactive: false
+});
+
+map.on("load", () => {
+  map.addLayer(
+    {
+      id: "3d-buildings",
+      source: "composite",
+      "source-layer": "building",
+      filter: ["==", "extrude", "true"],
+      type: "fill-extrusion",
+      paint: {
+        "fill-extrusion-color": "#aaa",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-opacity": 0.8
+      }
+    });
+});
+</script>
 
 {% endblock %}

@@ -1,6 +1,25 @@
 {% extends "layout.html" %}
 {% block body %}
 
+<!-- Map container -->
+<div id="map"></div>
+
+<style>
+  body {
+    margin: 0;
+  }
+
+  #map {
+    filter: blur(1px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
+  }
+</style>
+
 <h2>Sign in to bt3</h2>
 <p>Track buses live, check ETAs, and save your preferences.</p>
 
@@ -16,7 +35,7 @@
     <a class="btn ghost" href="/signup">Create account</a>
   </div>
 </form>
-
+<!--
 <div class="divider"></div>
 
 <p><span class="pill">Demo</span> No account needed. Explore the map as a guest.</p>
@@ -25,5 +44,42 @@
     <button type="submit" class="btn secondary">Continue as Guest</button>
   </div>
 </form>
+-->
+
+<!-- Mapbox -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" rel="stylesheet" />
+
+<script>
+mapboxgl.accessToken = "{{key}}";
+
+const map = new mapboxgl.Map({
+  container: "map",
+  style: "mapbox://styles/mapbox/dark-v11",
+  center: [-123.000433, 49.250387],
+  zoom: 16,
+  pitch: 60,
+  bearing: 80,
+  antialias: true,
+  interactive: false
+});
+
+map.on("load", () => {
+  map.addLayer(
+    {
+      id: "3d-buildings",
+      source: "composite",
+      "source-layer": "building",
+      filter: ["==", "extrude", "true"],
+      type: "fill-extrusion",
+      paint: {
+        "fill-extrusion-color": "#aaa",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-opacity": 0.8
+      }
+    });
+});
+</script>
 
 {% endblock %}
