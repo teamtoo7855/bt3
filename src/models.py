@@ -3,6 +3,8 @@ from sqlalchemy import Column, Integer, Index
 from sqlalchemy.exc import OperationalError
 import os, pandas
 from tools.fetch_gtfs_static import fetch_gtfs_static
+import logging
+logger = logging.getLogger(__name__)
 
 db = SQLAlchemy()
 Models = {}
@@ -11,7 +13,7 @@ def check_db_exists(app):
     # get GTFS static data if not already existing
     db_path = os.path.join(app.instance_path, "static.db")
     if not os.path.isfile(db_path):
-        print("Static data not found, fetching")
+        logger.info("Static data not found, fetching")
         fetch_gtfs_static(app.instance_path)
         with app.app_context():
             db.create_all()     # create database if not yet existing
@@ -22,9 +24,9 @@ def check_db_exists(app):
                     df = pandas.read_csv(path)
                     df.to_sql(name, db.engine, if_exists="replace", index=False)
                     os.remove(path)
-                    print(f'{f} imported into db')
+                    logger.info(f'{f} imported into db')
     else:
-        print("Static data found")
+        logger.info("Static data found")
 
 def reflect_tables(app):
     with app.app_context():
@@ -39,7 +41,7 @@ def reflect_tables(app):
                 {"__table__": table}
             )
             Models[table_name] = model
-            print(f"Model reflected: {table_name}")
+            logger.info(f"Model reflected: {table_name}")
         create_gtfs_indexes(db.engine)
 
 def create_gtfs_indexes(engine):
@@ -57,9 +59,9 @@ def create_gtfs_indexes(engine):
     for idx in indexes:
         try:
             idx.create(engine)
-            print(f"Indexed: {idx.name}")
+            logger.info(f"Indexed: {idx.name}")
         except OperationalError:
-            print(f"Skipped: {idx.name} (exists)")
+            logger.info(f"Skipped: {idx.name} (exists)")
 
 def get_stop_id_from_stop_code(stop_code):
     Stop = Models["stops"].__table__
