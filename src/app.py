@@ -7,10 +7,11 @@ from blueprints.profile import profile_bp
 from blueprints.dashboard import dashboard_bp
 from blueprints.api import api_bp
 from blueprints.data_geojson import data_geojson_bp
+from utils.logging_config import logging_setup
 
 app = Flask(__name__)
 app.config.from_object(Config)
-
+logging_setup()
 # Register blueprints
 app.register_blueprint(dashboard_bp)  # Handles root route /
 app.register_blueprint(auth_bp)
