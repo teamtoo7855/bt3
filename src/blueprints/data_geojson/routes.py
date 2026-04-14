@@ -1,19 +1,12 @@
 from flask import jsonify
 from google.transit import gtfs_realtime_pb2
 import requests
-import csv
-import os
-import re
-from tools.fetch_types import fetch_types
-from tools.fetch_gtfs_static import fetch_gtfs_static
 from config import Config
 from utils.data import check_id
 from flask import current_app as app
 from models import Models
 from models import db
 from . import data_geojson_bp
-
-
 
 @data_geojson_bp.route("/vehicles.geojson")
 def vehicles_geojson():
