@@ -8,7 +8,9 @@ from tools.fetch_types import fetch_types
 from tools.fetch_gtfs_static import fetch_gtfs_static
 from config import Config
 from utils.data import check_id
-GTFS_VEHICLE_URL = Config.GTFS_VEHICLE_URL
+from flask import current_app as app
+from models import Models
+from models import db
 from . import data_geojson_bp
 
 
@@ -16,7 +18,7 @@ from . import data_geojson_bp
 @data_geojson_bp.route("/vehicles.geojson")
 def vehicles_geojson():
     #load the GTFS key info for vehicle positions
-    response = requests.get(GTFS_VEHICLE_URL, timeout=10)
+    response = requests.get(Config.GTFS_VEHICLE_URL, timeout=10)
 
     #extract/parse the info from the .pb file
     feed = gtfs_realtime_pb2.FeedMessage()
