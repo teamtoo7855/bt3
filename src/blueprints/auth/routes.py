@@ -15,25 +15,25 @@ FIREBASE_LOGIN = Config.FIREBASE_LOGIN
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == "GET":
-        return render_template('signup.html')
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN)
 
     #error = None
     #if request.method == "POST":
     email = (request.form.get('email') or "").strip()
     if not validate_email(email):
         flash("Please enter a valid email.", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
     password = request.form.get('password') or ""
     password_confirm = request.form.get('password_confirm') or ""
 
     if not validate_password(password):
         flash("Password needs to be at least 8 characters long.", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
     if password != password_confirm:
         flash("Passwords don't match.", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
     # NEW: preferences (optional)
     favorite_route = (request.form.get("favorite_route") or "").strip()
@@ -43,13 +43,13 @@ def signup():
     favorite_stop = (request.form.get("favorite_stop") or "").strip()
     if not validate_favorite_stops(favorite_stop):
         flash(f"The stop {favorite_stop} does not exist. Please enter a valid stop number", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
     '''
     for multi down the line
     favorite_stops = [stop.strip() for stop in favorite_stop.split(",") if stop.strip()]
     if not validate_favorite_stops(favorite_stops):
         flash(f"the following stops are invalid {validate_favorite_stops(favorite_stops)}", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
         '''
     # normalize alert value
     alerts_value = ""
@@ -79,7 +79,7 @@ def signup():
         return redirect(url_for('auth.login'))
     except:
         flash("Error creating account. Email may already exist.", category="Error")
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
 
 
@@ -88,7 +88,7 @@ def signup():
 
 
 
-    return render_template('signup.html', error=error)
+    return render_template('signup.html', key=Config.MAPBOX_ACCESS_TOKEN, error=error)
 
 # -----------------------------
 # AUTH: LOGIN
