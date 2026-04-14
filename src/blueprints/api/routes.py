@@ -109,6 +109,7 @@ def next_arrival():
         }
     })
 
+# deprecate
 @api_bp.get("/shape")
 @limiter.limit("10 per minute")
 def get_shape():
