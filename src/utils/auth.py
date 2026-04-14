@@ -4,7 +4,7 @@ from flask import session
 
 
 def get_current_user():
-    """Return the currently logged-in username (or None)."""
+    """Return the currently logged-in UID (or None)."""
     if not session.get("logged_in"):
         return None
-    return session.get("username")
+    return session.get("uid")
