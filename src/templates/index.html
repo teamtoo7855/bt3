@@ -41,6 +41,11 @@
   <span id="locStatus" style="margin-left:8px;font-size:12px;"></span>
 </div>
 
+<div style="position:absolute;z-index:2;top:110px;left:12px;background:white;padding:8px 10px;border-radius:8px;font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
+  <button id="profileBtn">Edit Profile</button>
+  <button id="logoutBtn" style="margin-left:8px;">Logout</button>
+</div>
+
 <div style="position:absolute;z-index:2;top:60px;left:12px;background:white;padding:8px 10px;border-radius:8px;font-family:sans-serif;box-shadow:0 1px 6px rgba(0,0,0,0.2);">
   <label>Stop</label>
   <input id="stopInput" type="text" style="width:90px;margin-left:6px;">
@@ -441,7 +446,19 @@ locBtn.onclick = () => {
     maximumAge: 30000
   });
 };
+//profile and logout buttons
+const profileBtn = document.getElementById("profileBtn");
+const logoutBtn = document.getElementById("logoutBtn");
 
+// Redirect to profile edit page
+profileBtn.onclick = () => {
+  window.location.href = "/profile";
+};
+
+// Logout (adjust endpoint if needed)
+logoutBtn.onclick = () => {
+  window.location.href = "/logout";
+};
 const stopInput = document.getElementById("stopInput");
 const busInput = document.getElementById("busInput");
 const etaBtn = document.getElementById("etaBtn");

@@ -8,6 +8,8 @@ from firebase_admin import credentials, firestore, auth
 from firebase import db
 import re
 import json
+from utils.profile import get_profile_data, get_profile_doc_ref, set_profile
+from utils.validation import normalize_profile_data, validate_profile_data
 from config import Config
 from utils.data import STOPCODE_TO_STOPID, SHORT_TO_ROUTEID
 from decorators.auth import require_jwt
@@ -19,6 +21,16 @@ limiter = Limiter(get_remote_address, app=app)
 
 
 GTFS_TRIP_URL = Config.GTFS_TRIP_URL
+
+#profile api
+@api_bp.get("/profile")
+@require_jwt
+def api_get_profile(uid : str):
+    profile_data = get_profile_data(uid)
+    return jsonify ({"uid": uid, "profile_data": profile_data})
+
+
+
 
 @api_bp.get("/next_arrival")
 @limiter.limit("10 per minute")

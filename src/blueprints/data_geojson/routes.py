@@ -1,9 +1,6 @@
-from utils import data
-from flask import Flask, jsonify, render_template, request, flash, session, redirect, url_for
+from flask import jsonify
 from google.transit import gtfs_realtime_pb2
-import time
 import requests
-import pickle
 import csv
 import os
 import re

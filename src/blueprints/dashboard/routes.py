@@ -2,6 +2,8 @@
 #from app import app
 from config import Config
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, flash
+from utils.auth import get_current_user
+from utils.profile import get_profile_data
 
 from decorators.auth import require_jwt
 from . import dashboard_bp
@@ -35,6 +37,12 @@ def demo():
 @dashboard_bp.route("/")
 #get html page defined as index.html, also include mapbox token
 def home():
-    if not require_login_or_demo():
-        return redirect(url_for("auth.login"))
-    return render_template("index.html", key=Config.MAPBOX_ACCESS_TOKEN)
+    current_user = get_current_user()
+    if current_user:
+        profile_data = get_profile_data(current_user)
+        return render_template("index.html", key=Config.MAPBOX_ACCESS_TOKEN,
+                               profile_data=profile_data,
+                               jwt_token=session.get("jwt_token"),
+                               )
+    return redirect(url_for("auth.login"))
+    #return render_template("index.html", key=Config.MAPBOX_ACCESS_TOKEN)
