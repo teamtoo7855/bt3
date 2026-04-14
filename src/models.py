@@ -60,3 +60,15 @@ def create_gtfs_indexes(engine):
             print(f"Indexed: {idx.name}")
         except OperationalError:
             print(f"Skipped: {idx.name} (exists)")
+
+def get_stop_id_from_stop_code(stop_code):
+    Stop = Models["stops"].__table__
+    stmt = db.select(Stop.c.stop_id).where(Stop.c.stop_code == stop_code)
+    row  = db.session.execute(stmt).first()
+    return row.stop_id if row else None
+
+def get_route_id_from_short_name(short_name):
+    Route = Models["routes"].__table__
+    stmt = db.select(Route.c.route_id).where(Route.c.route_short_name == short_name)
+    row  = db.session.execute(stmt).first()
+    return row.route_id if row else None
